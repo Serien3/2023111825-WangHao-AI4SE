@@ -1,11 +1,13 @@
 .env
+.claude/
+.agents/
 
-# Data: raw API cache is large & regenerable; keep it out of git.
-data/raw/
+# Experiment 1 results: raw API cache is large & regenerable; keep it out of git.
+Experiment1/results/raw/
 # Processed dataset + figures are regenerable; ignore by default.
 # (If you want to version the final dataset, comment these two lines out.)
-data/processed/
-data/figures/
+# Experiment1/results/processed/
+# Experiment1/results/figures/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -15,3 +17,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+
+# Individual
+Experiment1/docs/design-docs/exp1-eda-captions.md
