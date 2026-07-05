@@ -1,1 +1,17 @@
 .env
+
+# Data: raw API cache is large & regenerable; keep it out of git.
+data/raw/
+# Processed dataset + figures are regenerable; ignore by default.
+# (If you want to version the final dataset, comment these two lines out.)
+data/processed/
+data/figures/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
