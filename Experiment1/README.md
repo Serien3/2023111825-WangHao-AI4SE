@@ -1,9 +1,6 @@
 # AI4SA-Exp1
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README-zh.md">简体中文</a>
-</p>
+English | [简体中文](README-zh.md)
 
 ## Overview
 
@@ -17,6 +14,7 @@ The experiment also performs exploratory data analysis on merge outcomes, inline
 
 - [Key Feature](#key-feature)
 - [Installation](#installation)
+- [Requirements](#requirements)
 - [Usage](#usage)
   - [1. Smoke Test GitHub Access](#1-smoke-test-github-access)
   - [2. Fetch a Small Sample](#2-fetch-a-small-sample)
@@ -37,7 +35,7 @@ The experiment also performs exploratory data analysis on merge outcomes, inline
 
 ## Installation
 
-The Python environment is managed at the repository root and is shared by all experiments. Keep `pyproject.toml`, `uv.lock`.
+It is recommended to reproduce the experiment environment with `uv`, or configure an equivalent Python environment based on `pyproject.toml`.
 
 From the repository root:
 
@@ -56,6 +54,21 @@ All commands below should be run from the repository root:
 ```bash
 cd /home/wzsyh/ai-software-engineer/Experiment1
 ```
+
+## Requirements
+
+- Python >= 3.12 (tested on v3.12.3)
+- pandas >= 3.0.3 for tabular data processing
+- pyarrow >= 24.0.0 for Parquet dataset storage
+- PyGithub >= 2.9.1 and requests >= 2.34.2 for GitHub API access
+- python-dotenv >= 1.2.2 for loading environment variables from `.env`
+- tqdm >= 4.68.3 for progress bars
+- matplotlib >= 3.11.0 and seaborn >= 0.13.2 for exploratory data analysis and figures
+
+The following tools must be available in your system path:
+
+- `uv` for reproducing the experiment environment
+- `GITHUB_TOKEN` configured in the repository root `.env` file for GitHub API access
 
 ## Usage
 

@@ -1,7 +1,7 @@
 [project]
-name = "ai-software-engineer"
+name = "2023111825-WangHao-AI4SE"
 version = "0.1.0"
-description = "Add your description here"
+description = "AI4SE"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

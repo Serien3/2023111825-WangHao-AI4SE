@@ -1,9 +1,6 @@
 # AI4SA-Exp1
 
-<p align="center">
-  <a href="README.md">English</a> |
-  <a href="README-zh.md">简体中文</a>
-</p>
+[English](README.md) | 简体中文
 
 ## Overview
 
@@ -17,12 +14,13 @@
 
 - [Key Feature](#key-feature)
 - [Installation](#installation)
+- [Requirements](#requirements)
 - [Usage](#usage)
   - [1. 测试 GitHub 访问](#1-测试-github-访问)
   - [2. 抓取小样本](#2-抓取小样本)
-   - [3. 抓取完整数据集](#3-抓取完整数据集)
-   - [4. 构建规范化数据表](#4-构建规范化数据表)
-   - [5. 运行探索性数据分析](#5-运行探索性数据分析)
+  - [3. 抓取完整数据集](#3-抓取完整数据集)
+  - [4. 构建规范化数据表](#4-构建规范化数据表)
+  - [5. 运行探索性数据分析](#5-运行探索性数据分析)
 - [Limitations](#limitations)
 
 ## Key Feature
@@ -37,7 +35,7 @@
 
 ## Installation
 
-Python 环境由仓库根目录统一管理，供所有实验共用。`pyproject.toml`、`uv.lock` 和虚拟环境都保留在仓库根目录。
+建议使用 `uv` 复现实验环境，或参考 `pyproject.toml` 配置等价的 Python 环境。
 
 在仓库根目录运行：
 
@@ -56,6 +54,21 @@ GITHUB_TOKEN=<your_github_token>
 ```bash
 cd /home/wzsyh/ai-software-engineer/Experiment1
 ```
+
+## Requirements
+
+- Python >= 3.12（已在 v3.12.3 测试）
+- pandas >= 3.0.3 用于表格数据处理
+- pyarrow >= 24.0.0 用于 Parquet 数据集存储
+- PyGithub >= 2.9.1 和 requests >= 2.34.2 用于访问 GitHub API
+- python-dotenv >= 1.2.2 用于从 `.env` 加载环境变量
+- tqdm >= 4.68.3 用于显示进度条
+- matplotlib >= 3.11.0 和 seaborn >= 0.13.2 用于探索性数据分析和图表生成
+
+系统路径中必须可用以下工具或配置：
+
+- `uv` 用于复现实验环境
+- `GITHUB_TOKEN` 需要配置在仓库根目录 `.env` 文件中，用于访问 GitHub API
 
 ## Usage
 
