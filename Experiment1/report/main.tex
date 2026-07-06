@@ -22,15 +22,15 @@
 
 \setexperimenttitle{实验一：代码审查意见挖掘与需求理解}
 
-\setstudentname{\hintholder{请输入姓名}}
-\setdepartment{\hintholder{请输入院系}}
-\setstudentid{\hintholder{请输入学号}}
+\setstudentname{\hintholder{王皓}}
+\setdepartment{\hintholder{计算学部}}
+\setstudentid{\hintholder{2023111825}}
 
 \setcourseteacher{刘佳琨}
 \setinstructor{刘佳琨}
 
-\setlablocation{\hintholder{请输入实验地点}}
-\setlabtime{    \hintholder{请输入实验时间}}
+\setlablocation{\hintholder{格物213}}
+\setlabtime{    \hintholder{2026年6月29日}}
 
 \begin{document}
 
@@ -213,7 +213,11 @@ AI 标签是实验五的数据基础。统计 AI 代码信号构成，并对比 
 
 \experimentproblems{
 
-\placeholder{5cm}{请总结实验中遇到的问题及解决方法}
+\textbf{1. GitHub API 限流导致采集中断。}
+采集初期未对 API 限额做主动监控，在连续抓取约 800 条 PR 后触发核心限额（5000 次/小时），程序阻塞报错退出。解决方案：在客户端封装中读取每次响应的 \texttt{X-RateLimit-Remaining} 与 \texttt{X-RateLimit-Reset} 头，额度低于阈值时精确休眠至重置时刻再继续；同时将每条 PR 独立存盘以支持断点续传，此后再无因限流导致的数据丢失。
+
+\textbf{2. AI 生成代码样本极度稀少。}
+五个仓库的基础 1{,}500 条随机样本中，自然出现的 \texttt{is\_ai\_code=True} PR 仅约 40 条，不足以支撑实验五的分析。解决方案：利用 GitHub Search API 定向搜索包含 AI 信号关键词的 PR（每仓库上限 50 条），在基础样本外补采 208 条，并以 \texttt{oversampled} 字段标记，最终将 AI 代码样本扩充至 294 条。
 
 }
 
@@ -223,7 +227,9 @@ AI 标签是实验五的数据基础。统计 AI 代码信号构成，并对比 
 
 \experimentexperience{
 
-\placeholder{5cm}{请分享实验体会和收获}
+本实验最核心的收获是理解了"问题驱动的数据集设计"这一思路。在动手采集之前，花时间梳理后续六个实验对数据的隐含要求——生成任务需要带 \texttt{diff\_hunk} 的 inline 评论配对，AST/CFG 解析希望语言统一，实验五需要足量 AI 样本——这些前期约束直接决定了仓库选择标准、抓取粒度和表结构设计。
+
+此外，探索性分析（EDA）的核心在于,在建模之前对数据风险的主动识别。合并率的 2:1 不平衡、评论分布的严重零膨胀、PR 规模的重尾特征，以及各仓库间超过 40 个百分点的合并率差距，这些在 EDA 阶段都已量化呈现；如果跳过这一步直接建模，这些问题将以更难排查的方式暴露在实验结果中；在数据获取后先进行一定的EDA并初步掌握数据原始特征是有一定价值的。
 
 }
 
