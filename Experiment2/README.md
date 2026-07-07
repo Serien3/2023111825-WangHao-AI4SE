@@ -1,12 +1,14 @@
 # AI4SA-Exp2
 
+English | [简体中文](README-zh.md)
+
 ## Overview
 
-Experiment 2 builds the traditional machine-learning baseline for Merge Prediction. It consumes the normalized GitHub code-review dataset produced by Experiment 1, filters to human-authored Python pull requests, extracts hand-crafted AST, CFG, statistical, and text features from the stored diffs and metadata, then trains SVM, Random Forest, XGBoost, and LightGBM classifiers.
+Experiment 2 builds a traditional machine-learning baseline for the course-wide Merge Prediction task. It consumes the normalized GitHub code-review tables produced by Experiment 1, filters to human-authored Python pull requests, extracts hand-crafted AST, CFG, change-statistics, and text features from stored diffs and PR metadata, then trains SVM, Random Forest, XGBoost, and LightGBM classifiers.
 
-The experiment reports two feature settings: a deployable pre-review setting that only uses information available when a pull request is opened, and a full setting that also includes review-process features as an upper bound. The comparison quantifies label leakage from review activity while preserving a fair baseline for later deep-learning and LLM experiments.
+The experiment deliberately reports two feature settings. The `pre` setting uses only information available when a pull request is opened, so it represents the deployable pre-review baseline. The `full` setting additionally includes review-process features such as review counts, reviewer counts, and comment density, so it is treated as a post-review upper bound rather than deployable performance. The overview figure below summarizes the main model comparison across both settings.
 
-![Experiment 2 model comparison](results/figures/label_leakage_ablation.png)
+![Experiment 2 model performance overview](results/figures/model_performance_matrix.png)
 
 ## Table of Contents
 
@@ -15,20 +17,22 @@ The experiment reports two feature settings: a deployable pre-review setting tha
 - [Requirements](#requirements)
 - [Usage](#usage)
   - [1. Extract Features](#1-extract-features)
-  - [2. Train Models](#2-train-models)
-  - [3. Evaluate Models](#3-evaluate-models)
-  - [4. Run Label-Leakage Ablation](#4-run-label-leakage-ablation)
+  - [2. Train Deployable Pre-review Models](#2-train-deployable-pre-review-models)
+  - [3. Train Full Upper-bound Models](#3-train-full-upper-bound-models)
+  - [4. Evaluate Models](#4-evaluate-models)
+  - [5. Run Label-leakage Ablation](#5-run-label-leakage-ablation)
 - [Limitations](#limitations)
 
 ## Key Feature
 
-- Provides a traditional ML baseline for the course-wide Merge Prediction task.
-- Reuses Experiment 1 normalized tables under `Experiment1/results/processed/`, keeping the experiment pipeline self-contained after data collection.
-- Extracts 98-dimensional PR-level features from diff patches and PR metadata, including AST, CFG, statistical, text, and TF-IDF features.
-- Uses diff-only code analysis with tree-sitter error-tolerant parsing, avoiding repository re-fetching and preserving the Experiment 6 boundary for richer repository context.
-- Trains SVM, Random Forest, XGBoost, and LightGBM models with grid search and 5-fold cross-validation.
-- Separates `pre` and `full` feature sets to distinguish deployable pre-review prediction from post-review upper-bound analysis.
-- Generates reusable metrics and figures under `results/metrics/` and `results/figures/`.
+- Provides a low-cost, interpretable traditional ML baseline for Merge Prediction before later CodeBERT, LLM, and VSCode-plugin experiments.
+- Reuses Experiment 1 normalized tables under `Experiment1/results/processed/`, keeping the pipeline self-contained after data collection.
+- Filters to human-authored PRs with Python patches, producing a PR-level feature matrix for supervised classification.
+- Extracts 98-dimensional features from diff patches and PR metadata, including AST, CFG, change-statistics, review-process, text, and TF-IDF features.
+- Uses diff-only code analysis with tree-sitter error-tolerant parsing, avoiding repository re-fetching and preserving Experiment 6 for richer repository-level context.
+- Trains SVM, Random Forest, XGBoost, and LightGBM with grid search, 5-fold cross-validation, and class-imbalance handling.
+- Separates `pre` and `full` feature sets to distinguish deployable prediction from post-review upper-bound analysis and quantify temporal leakage.
+- Generates reusable metrics, trained models, scalers, train/validation/test splits, and figures under `results/`.
 
 ## Installation
 
@@ -47,7 +51,7 @@ cd /home/wzsyh/ai-software-engineer/Experiment1
 uv run python -m src.build_dataset
 ```
 
-All commands below should be run from the repository root:
+All commands below should be run from the Experiment 2 directory:
 
 ```bash
 cd /home/wzsyh/ai-software-engineer/Experiment2
@@ -55,13 +59,13 @@ cd /home/wzsyh/ai-software-engineer/Experiment2
 
 ## Requirements
 
-- Python >= 3.12 (tested on v3.12.3)
-- pandas >= 3.0.3 and pyarrow >= 24.0.0 for reading and writing feature tables
-- scikit-learn >= 1.9.0 for preprocessing, SVM, Random Forest, metrics, and grid search
-- tree-sitter >= 0.26.0 and tree-sitter-python >= 0.25.0 for AST parsing from diff-reconstructed Python code
-- xgboost >= 3.3.0 and lightgbm >= 4.6.0 for boosted-tree baselines
-- matplotlib >= 3.11.0 and seaborn >= 0.13.2 for evaluation figures
-- tqdm >= 4.68.3 for progress bars
+- Python >= 3.12
+- pandas and pyarrow for reading and writing feature tables
+- scikit-learn for preprocessing, SVM, Random Forest, metrics, and grid search
+- tree-sitter and tree-sitter-python for AST parsing from diff-reconstructed Python code
+- xgboost and lightgbm for boosted-tree baselines
+- matplotlib and seaborn for evaluation figures
+- tqdm for progress bars
 
 The following inputs and tools must be available:
 
@@ -90,15 +94,9 @@ Feature outputs are written to:
 Experiment2/results/features/
 ```
 
-### 2. Train Models
+### 2. Train Deployable Pre-review Models
 
-Train all four models on the full feature set, including review-process features:
-
-```bash
-uv run python -m src.train --model all --feature-set full
-```
-
-Train all four models on the pre-review feature set, excluding review-process leakage:
+Train all four models on the `pre` feature set, excluding review-process leakage:
 
 ```bash
 uv run python -m src.train --model all --feature-set pre
@@ -110,19 +108,27 @@ To train a single model, replace `all` with `svm`, `rf`, `xgboost`, or `lightgbm
 uv run python -m src.train --model rf --feature-set pre
 ```
 
+### 3. Train Full Upper-bound Models
+
+Train all four models on the `full` feature set, including review-process features for upper-bound analysis:
+
+```bash
+uv run python -m src.train --model all --feature-set full
+```
+
 Model, scaler, and split artifacts are written to:
 
 ```text
 Experiment2/results/models/
 ```
 
-### 3. Evaluate Models
+### 4. Evaluate Models
 
 Evaluate trained models and generate metrics and figures for each feature set:
 
 ```bash
-uv run python -m src.evaluate --feature-set full
 uv run python -m src.evaluate --feature-set pre
+uv run python -m src.evaluate --feature-set full
 ```
 
 Evaluation outputs are written to:
@@ -132,25 +138,26 @@ Experiment2/results/metrics/
 Experiment2/results/figures/
 ```
 
-### 4. Run Label-Leakage Ablation
+### 5. Run Label-leakage Ablation
 
-After both `full` and `pre` models have been evaluated, compare the two settings:
+After both `pre` and `full` models have been evaluated, compare the two settings:
 
 ```bash
 uv run python -m src.evaluate --ablation
 ```
 
-This step generates the label-leakage comparison figure:
+This step generates the label-leakage comparison and performance-overview figures:
 
 ```text
 Experiment2/results/figures/label_leakage_ablation.png
+Experiment2/results/figures/model_performance_matrix.png
 ```
 
 ## Limitations
 
 - AST and CFG features are extracted from diff patches rather than complete repository files. This is reproducible and sufficient for aggregate structural features, but it cannot capture full-program semantics.
 - CFG features are lightweight approximations based on control-flow syntax, not full semantic control-flow graphs.
-- The `full` feature set includes review-process features such as `num_reviews`, `num_reviewers`, and comment counts. These features are useful for upper-bound analysis but contain temporal leakage and should not be used as deployable pre-review performance.
-- The dataset is filtered to human-authored PRs with Python patches, so the baseline does not directly cover AI-generated code or non-Python changes.
+- The `full` feature set includes review-process features such as `num_reviews`, `num_reviewers`, and comment counts. These features are useful for upper-bound analysis but contain temporal leakage and should not be used as deployable pre-review features.
+- The dataset is filtered to human-authored PRs with Python patches, so this baseline does not directly cover AI-generated code or non-Python changes.
 - Repository behavior differs strongly. Merge rates and review culture vary across projects, so aggregate performance should be interpreted together with per-repository metrics.
 - Traditional ML models require fixed hand-crafted features. They provide interpretability and low training cost, but may miss richer code semantics that later CodeBERT or LLM experiments are expected to explore.
