@@ -1,0 +1,16 @@
+[
+  {
+    "repo": "home-assistant/core",
+    "number": 175101,
+    "diff": "--- homeassistant/components/anthropic/config_flow.py ---\n@@ -298,7 +298,7 @@ async def async_step_init(\n                 ):\n                     self.options.pop(CONF_LLM_HASS_API)\n                 if not errors:\n-                    return await self.async_step_advanced()\n+                    return await self.async_step_additional()\n \n         return self.async_show_form(\n             step_id=\"init\",\n@@ -308,10 +308,10 @@ async def async_step_init(\n             errors=errors or None,\n         )\n \n-    async def async_step_advanced(\n+    async def async_step_additional(\n         self, user_input: dict[str, Any] | None = None\n     ) -> SubentryFlowResult:\n-        \"\"\"Manage advanced options.\"\"\"\n+        \"\"\"Manage additional options.\"\"\"\n         errors: dict[str, str] = {}\n         description_placeholders: dict[str, str] = {}\n \n@@ -360,7 +360,7 @@ async def async_step_advanced(\n                 return await self.async_step_model()\n \n         return self.async_show_form(\n-            step_id=\"advanced\",\n+            step_id=\"additional\",\n             data_schema=self.add_suggested_values_to_schema(\n                 vol.Schema(step_schema), self.options\n             ),\n--- tests/components/anthropic/test_config_flow.py ---\n@@ -275,9 +275,9 @@ async def test_subentry_options_thinking_budget_more_than_max(\n         },\n     )\n     assert options[\"type\"] is FlowResultType.FORM\n-    assert options[\"step_id\"] == \"advanced\"\n+    assert options[\"step_id\"] == \"additional\"\n \n-    # Conf\n... [truncated]",
+    "is_merged": true,
+    "reason": "代码改动完整、符合项目规范，可合并。"
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46586,
+    "diff": "--- src/transformers/modeling_rope_utils.py ---\n@@ -994,7 +994,7 @@ def _validate_proportional_rope_parameters(self, rope_parameters: dict, ignore_k\n             logger.warning(\n                 \"`rope_parameters`'s partial_rotary_factor is None. This will default to 1.0 in the computation, \"\n                 \"making this equivalent to the linear_scaling RoPE type. Provide a value in the range [0.0, 1.0) to \"\n-                \"make use of the proportional RoPE funcitonality.\"\n+                \"make use of the proportional RoPE functionality.\"\n             )\n \n     @staticmethod",
+    "is_merged": false,
+    "reason": "改动存在问题或未达合并标准，暂不合并。"
+  }
+]

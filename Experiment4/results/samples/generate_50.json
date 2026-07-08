@@ -1,0 +1,402 @@
+[
+  {
+    "repo": "django/django",
+    "number": 21514,
+    "is_merged": true,
+    "target_comment": "To double-check my understanding: if we didn't have a `db_default` set, this would set the value to `null` or to `default` or raise an error if neither of these is valid?\n\nWeird edge-case!",
+    "target_path": "tests/field_defaults/tests.py",
+    "target_comment_id": 3434145521
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46878,
+    "is_merged": true,
+    "target_comment": "Hmm, can we reformulate it a bit? It's kind of inherently restricted because it expects a float type of mask across the board ",
+    "target_path": "src/transformers/models/nemotron_asr_streaming/modular_nemotron_asr_streaming.py",
+    "target_comment_id": 3473407358
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46861,
+    "is_merged": true,
+    "target_comment": "any reason we dont do these casts anymore?",
+    "target_path": "src/transformers/vision_utils.py",
+    "target_comment_id": 3467701501
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 27618,
+    "is_merged": true,
+    "target_comment": "@jbrockmendel last comment...here is where I think that check needs to go. We are getting the `str` of the object but when passed in as a DTA the introspection is different than when passed in an object array. Wondering if we have shared utilities to already handle that ambiguity I could leverage instead of trying to do it all in this extension",
+    "target_path": "pandas/_libs/src/ujson/python/objToJSON.c",
+    "target_comment_id": 307940611
+  },
+  {
+    "repo": "django/django",
+    "number": 21277,
+    "is_merged": true,
+    "target_comment": "If this is a good idea, we might need to see about doing this good idea in a few other places?",
+    "target_path": "django/db/models/query.py",
+    "target_comment_id": 3229943610
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65733,
+    "is_merged": true,
+    "target_comment": "TODO: I have to check (and test) a bit for `new_local` close that last transition value, because AFAIK `new_local` is supposedly local time but `tdata` are UTC values.\n\nSo in theory the local time could still be smaller than the last transition value, while it is actually (in UTC) beyond it. But it might be that this is fine, since offsets beyond that last transition value should still be correct until the next transition? \n(in theory one could probably create a tz rule with two transitions only a few hours apart, but that should not occur in practice?)",
+    "target_path": "pandas/_libs/tslibs/tzconversion.pyx",
+    "target_comment_id": 3298715726
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 71916,
+    "is_merged": true,
+    "target_comment": "No actual changes here, just fixing comments",
+    "target_path": "homeassistant/components/recorder/models.py",
+    "target_comment_id": 873254723
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175396,
+    "is_merged": true,
+    "target_comment": "This is only missing when migrating data from old HA instances. The other keys should always be there.\nSince this is quite a hot path in our code (every telegram received will go through`dict_to_model()` on reception) I think we should not be too wary with that. \n\nAs an alternative that only effects migration, not live data, we could do in  `migrate_telegrams()`\n```py\nstored_telegrams = [self.dict_to_model({\"data_secure\": False} | t) for t in json_data]\n# or\nstored_telegrams = []\nfor t in json_data:\n    t.setdefault(\"data_secure\": False)  # was added in 2026.3\n    stored_telegrams.append(self.dict_to_model(t))\n```",
+    "target_path": "homeassistant/components/knx/telegrams.py",
+    "target_comment_id": 3516052638
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46891,
+    "is_merged": false,
+    "target_comment": "changes to be reverted before merge.",
+    "target_path": ".github/workflows/pr-ci-caller.yml",
+    "target_comment_id": 3506495759
+  },
+  {
+    "repo": "django/django",
+    "number": 21364,
+    "is_merged": true,
+    "target_comment": "```suggestion\n            \"_selected_action\": [str(self.per3.id)],\n```",
+    "target_path": "tests/admin_views/tests.py",
+    "target_comment_id": 3474558796
+  },
+  {
+    "repo": "django/django",
+    "number": 21445,
+    "is_merged": true,
+    "target_comment": "Per the analysis I assume the `gc.collect()` call is only necessary on mypy or other implementation that don't automatically garbage collect locals (e.g. receivers connected) when a `test_*` method returns?",
+    "target_path": "tests/signals/tests.py",
+    "target_comment_id": 3389052242
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68929,
+    "is_merged": true,
+    "target_comment": "The broken example (missing required `jars_root`) went unnoticed because nothing exercises the config.yml coordinators example. A tiny test that loads this example through CoordinatorManager and asserts each entry constructs would stop this drifting again. I am ok to leave this for a follow-up though",
+    "target_path": "task-sdk/src/airflow/sdk/coordinators/java/coordinator.py",
+    "target_comment_id": 3464708044
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46573,
+    "is_merged": true,
+    "target_comment": "why split, the code in each branch is identical?\n\npls read the issue, I suggested a correct fix. If you're using a coding agent, pls inspect what it has generated yourself before pushing a PR",
+    "target_path": "src/transformers/pipelines/image_classification.py",
+    "target_comment_id": 3407981473
+  },
+  {
+    "repo": "django/django",
+    "number": 21208,
+    "is_merged": true,
+    "target_comment": "`super().setUpClass()` already adds `cls.middleware` to `MIDDLEWARE`, so `[*settings.MIDDLEWARE, cls.middleware, common]` duplicates it.\n\n#optional",
+    "target_path": "tests/auth_tests/test_remote_user.py",
+    "target_comment_id": 3182436012
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69072,
+    "is_merged": true,
+    "target_comment": "Maybe make this more explicit with a TODO and note the min version that it can be removed by:\n\n\n```suggestion\n        # TODO: Remove this fallback once the min Airflow version for providers is >= 3.1         \n        # (BaseExecutor.team_name is always defined from Airflow 3.1 onward).\n\n```",
+    "target_path": "providers/amazon/src/airflow/providers/amazon/aws/executors/aws_lambda/lambda_executor.py",
+    "target_comment_id": 3494012588
+  },
+  {
+    "repo": "django/django",
+    "number": 21326,
+    "is_merged": false,
+    "target_comment": "`expected_pattern` is used with `assertRegex()`, but the dots in the pattern are currently unescaped. In regex, `.` matches any character, so this doesn’t strictly assert that a literal dot separates the stem and extension. Escape literal dots (e.g., use a raw f-string with `\\.` or build the pattern with `re.escape()` for the fixed parts) so the test can’t pass on unexpected filenames.\n\nThis issue also appears on line 853 of the same file.\n",
+    "target_path": "tests/file_storage/tests.py",
+    "target_comment_id": 3268169747
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46727,
+    "is_merged": true,
+    "target_comment": "unrelated? Looks functionally same to me",
+    "target_path": "src/transformers/models/auto/image_processing_auto.py",
+    "target_comment_id": 3434122232
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65752,
+    "is_merged": false,
+    "target_comment": "Thanks for the PR, but I'm negative on this approach. In particular, I do not see why a user should expect two different outputs here:\n\n```python\na = pd.Series([1, None], dtype=\"int16[pyarrow]\")\nb1 = pd.Series([10, 20], index=[2, 1])\nb2 = {2: 10, 1: 20}\nprint(a.map(b1))\n# 0    20.0\n# 1     NaN\n# dtype: float64\nprint(a.map(b2))\n# 0    20.0\n# 1    <NA>\n# dtype: double[pyarrow]\n```",
+    "target_path": "pandas/core/arrays/base.py",
+    "target_comment_id": 3344258916
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65902,
+    "is_merged": true,
+    "target_comment": "I don't think we need to branch here; can use `self._parent.index`. It will be the same as `_orig.index` when the latter is not None.",
+    "target_path": "pandas/core/indexes/accessors.py",
+    "target_comment_id": 3438853259
+  },
+  {
+    "repo": "django/django",
+    "number": 21419,
+    "is_merged": true,
+    "target_comment": "I would maybe make `using` an explicit keyword arg, rather than pulling it from `kwargs`, but I don't have a strong opinion one way or the other:\n\n```suggestion\n    def handle(self, *args, *, using=None, **kwargs):\n        subject = \"Test email from %s on %s\" % (socket.gethostname(), timezone.now())\n```\n",
+    "target_path": "django/core/management/commands/sendtestemail.py",
+    "target_comment_id": 3358045943
+  },
+  {
+    "repo": "django/django",
+    "number": 21552,
+    "is_merged": true,
+    "target_comment": "Would there be any value in specifically including a Unicode (non-ASCII) password here?\n\n```suggestion\n        for pass_str, pass_bytes in [\n            (\"password\", b\"password\"),\n            (\"Lösenord\", \"Lösenord\".encode()),\n            (\"\", b\"non-utf-8-\\xc0\"),\n        ]:\n```",
+    "target_path": "tests/auth_tests/test_hashers.py",
+    "target_comment_id": 3477948246
+  },
+  {
+    "repo": "django/django",
+    "number": 21263,
+    "is_merged": false,
+    "target_comment": "I tested this locally by running the new async decorator case before `async.tests.ViewTests.test_views_are_correctly_marked`. After that, `View.dispatch` itself ends up marked as a coroutine function, so `SyncView.as_view()` is also reported as coroutine-marked and that test fails.\n\nI think the issue is that `inspect.markcoroutinefunction()` unwraps the bound method through `__func__`, so the marker lands on the shared `View.dispatch` function instead of only on the temporary callable created inside `_multi_decorate()`.\n\nCould we avoid marking the bound method directly and mark a local wrapper instead? It would also be good to add a test showing that a later sync CBV doesn't inherit the marker.\n\n```diff\ndiff --git a/django/utils/decorators.py b/django/utils/decorators.py\n--- a/django/utils/decorators.py\n+++ b/django/utils/decorators.py\n@@\n-from functools import partial, update_wrapper, wraps\n+from functools import update_wrapper, wraps\n@@\n-        bound_method = method.__get__(self, type(self))\n-        if getattr(self, \"view_is_async\", False):\n-            markcoroutinefunction(bound_method)\n-        bound_method = wraps(method)(partial(bound_method))\n+        @wraps(method)\n+        def bound_method(*args, **kwargs):\n+            return method.__get__(self, type(self))(*args, **kwargs)\n+\n+        if getattr(self, \"view_is_async\", False):\n+            markcoroutinefunction(bound_method)\n         for dec in decorators:\n             bound_method = dec(bound_method)\n         return bound_method(*args, **kwargs)\n```",
+    "target_path": "django/utils/decorators.py",
+    "target_comment_id": 3217695201
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175189,
+    "is_merged": true,
+    "target_comment": "Note: I have adjusted the deprecation date on `CONCENTRATION_PARTS_PER_CUBIC_METER` from `2027.7` to `2027.8` to match the other `CONCENTRATION_***` units.",
+    "target_path": "homeassistant/const.py",
+    "target_comment_id": 3497184447
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46654,
+    "is_merged": true,
+    "target_comment": "this is really weird imo, and also means that models with simple sliding window could potentially go beyond when using assisted generation or prompt-caching \n\nApparently it comes from llama4-style cache when it got merged with simple sliding cache",
+    "target_path": "src/transformers/models/diffusion_gemma/modular_diffusion_gemma.py",
+    "target_comment_id": 3427310805
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46790,
+    "is_merged": true,
+    "target_comment": "this test will be triggered for all model classes and since it does'nt need an actual model, lets move uunder Generartion Integaration tests",
+    "target_path": "tests/generation/test_utils.py",
+    "target_comment_id": 3450738209
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69128,
+    "is_merged": true,
+    "target_comment": "As someone not too familiar with this hook, I have one question about defaulting to False (i.e. assuming the HTTP client is still open). If the transport cannot be found, does that not imply the client is no longer usable? In that case, would it be safer to rebuild the cached request adapter (or even fail by raising an error and logging) rather than continue reusing it?",
+    "target_path": "providers/microsoft/azure/src/airflow/providers/microsoft/azure/hooks/msgraph.py",
+    "target_comment_id": 3500777444
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65683,
+    "is_merged": true,
+    "target_comment": "I think for this test, you could also update the test to not use `inplace` (from a quick look, I think the test is not really about the inplace drop, but it is using that to construct the expected result of the indexing operation)",
+    "target_path": "pandas/tests/indexing/multiindex/test_indexing_slow.py",
+    "target_comment_id": 3272085677
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175372,
+    "is_merged": true,
+    "target_comment": "The deprecated service handlers still re-invoke the automatic lifecycle functions (`register_webhook(None)` / `unregister_webhook(None)`), which has surprising side effects now that the webhook is managed automatically.\n\nIn normal operation the webhook is already registered at startup (via `async_at_started`/cloud connect above), so `register_webhook(None)` reaches `webhook_register(...)` with an already-registered ID, which raises `ValueError(\"Handler is already defined!\")`. A user calling the deprecated `netatmo.register_webhook` action would therefore get an unhandled error rather than a graceful deprecation. Similarly, calling `netatmo.unregister_webhook` silently tears down the push connection until the next restart/reconnect.\n\nThe new `test_deprecated_webhook_service` does not catch this because the automatic startup registration never fires under test (no `EVENT_HOMEASSISTANT_STARTED` is emitted), so the webhook is not registered before the service call.\n\nConsider making the deprecated handlers only emit the warning and create the repair issue (a no-op), since re-running register/unregister is exactly the behavior being deprecated.",
+    "target_path": "homeassistant/components/netatmo/__init__.py",
+    "target_comment_id": 3513837288
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46862,
+    "is_merged": true,
+    "target_comment": "ok so this goes with @IlyasMoutawwakil PR re modeling refactors",
+    "target_path": "src/transformers/cache_utils.py",
+    "target_comment_id": 3466846195
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69243,
+    "is_merged": true,
+    "target_comment": "This closes the mapped-operator path, but the same non-determinism survives when the policy arrives via DAG-level `default_args`. `serialize_dag` serializes the raw `default_args` dict, and a `RetryPolicy` value there still hits the `str(obj)` fallback, so `DAG(default_args={\"retry_policy\": policy})` serializes with an embedded memory address and still produces a new DagVersion every parse (verified on main; each task still gets `has_retry_policy=True` correctly, so only the DAG-level dict leaks).\n\nThe `default_args` cleanup in `serialize_dag` already strips callbacks exactly this way, so one option is a shared set, e.g. `_HAS_FLAG_FIELDS = _OPERATOR_CALLBACK_FIELDS | frozenset({\"retry_policy\"})`, used both here and in that loop. That would also fold this new branch into the callback branch below, since `f\"has_{k}\"` already produces `has_retry_policy`. Happy for the `default_args` part to be a follow-up if you want to keep this PR scoped to mapped tasks.",
+    "target_path": "airflow-core/src/airflow/serialization/serialized_objects.py",
+    "target_comment_id": 3514451148
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46543,
+    "is_merged": true,
+    "target_comment": "released ckpt have it and we shouldn't hardcode it, only actual generation params need a default. If model is created from scratch, it will still be able to generate with above values",
+    "target_path": "src/transformers/models/diffusion_gemma/generation_diffusion_gemma.py",
+    "target_comment_id": 3389988505
+  },
+  {
+    "repo": "django/django",
+    "number": 21283,
+    "is_merged": true,
+    "target_comment": "I think we should document the \"Advanced deprecation warnings\" commit here: https://docs.djangoproject.com/en/6.0/internals/howto-release-django/#a-few-days-before-a-feature-freeze",
+    "target_path": "django/utils/deprecation.py",
+    "target_comment_id": 3235801320
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46850,
+    "is_merged": true,
+    "target_comment": "passing or/and functions will trigger torch.vmap path, which might add some overhead. Gemma models are the only ones using `blockwise_overlay` for sliding attention\n\nI am seeing we updated all except for paligemma, does that mean paligemma-2 needs to keep full-mask in prefix for sliding layers?",
+    "target_path": "src/transformers/models/gemma3/modeling_gemma3.py",
+    "target_comment_id": 3465578096
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68889,
+    "is_merged": true,
+    "target_comment": "```suggestion\n        assert len(plugins) == 6  # six are loaded from examples\n```",
+    "target_path": "airflow-core/tests/unit/plugins/test_plugins_manager.py",
+    "target_comment_id": 3471449971
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 68598,
+    "is_merged": true,
+    "target_comment": "I dislike writing this out twice, but I don't think there is another option since the lambda need to be explicitly written out for the bakery",
+    "target_path": "homeassistant/components/recorder/history.py",
+    "target_comment_id": 833987332
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68773,
+    "is_merged": true,
+    "target_comment": "This testing module doesn't add coverage over what's  `airflow-core/tests/unit/api_fastapi/core_api/routes/public/test_pools.py` provides - I'd remove it",
+    "target_path": "airflow-core/tests/unit/api_fastapi/core_api/datamodels/test_pools.py",
+    "target_comment_id": 3444559235
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65305,
+    "is_merged": false,
+    "target_comment": "looks like unrelated stuff snuck in?",
+    "target_path": "doc/source/whatsnew/v3.1.0.rst",
+    "target_comment_id": 3108050462
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46876,
+    "is_merged": true,
+    "target_comment": "Having the exclusion here in `_LazyAutoMapping` means that it will correctly be skipped for models, but also for processors, tokenizers etc, which would otherwise have the same issue of overshadowing the base library class if the config class is the same between the custom processor/tokenizer/etc and the library one",
+    "target_path": "src/transformers/models/auto/auto_factory.py",
+    "target_comment_id": 3473166311
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174949,
+    "is_merged": true,
+    "target_comment": "The TextSelector with autocomplete was added to the YAML validation schema, but autocomplete is a browser UI hint. This has no effect there. The actual UI forms that users see in the browser are defined in config_flow.py, which wasn't touched by this PR. Do I miss something?",
+    "target_path": "homeassistant/components/proxmoxve/__init__.py",
+    "target_comment_id": 3485492534
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46690,
+    "is_merged": true,
+    "target_comment": "Just to be sure we don't need to adjust the TP plan since we split across the heads in both cases 👀 ",
+    "target_path": "src/transformers/models/laguna/modular_laguna.py",
+    "target_comment_id": 3420615521
+  },
+  {
+    "repo": "django/django",
+    "number": 21290,
+    "is_merged": true,
+    "target_comment": "Suggestion: Reject all control characters, rather than just `\\n` and `\\r`.\n\nI'd suggest a regex for `\\x00-\\x1F\\x7F-\\x9F`, which is what's used in the ORM's `FORBIDDEN_ALIAS_PATTERN`.",
+    "target_path": "django/http/response.py",
+    "target_comment_id": 3257513177
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175404,
+    "is_merged": true,
+    "target_comment": "Avoid logging the full extra index URL here, since `UV_EXTRA_INDEX_URL` may contain embedded credentials (basic auth/token) and this warning would leak them into logs; log only the hostname(s) instead.",
+    "target_path": "homeassistant/util/package.py",
+    "target_comment_id": 3516112402
+  },
+  {
+    "repo": "django/django",
+    "number": 21516,
+    "is_merged": true,
+    "target_comment": "Hang on -- adjusting this. Thought I could avoid rewriting a test by special-casing 0, but it's not safe.",
+    "target_path": "django/utils/cache.py",
+    "target_comment_id": 3438121302
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66049,
+    "is_merged": true,
+    "target_comment": "i think this might now be unreachable. can you check.  other than this, LGTM",
+    "target_path": "pandas/core/arrays/sparse/array.py",
+    "target_comment_id": 3493780408
+  },
+  {
+    "repo": "django/django",
+    "number": 21231,
+    "is_merged": true,
+    "target_comment": "This feels overcomplicated for what (I think) it's achieving, could this be written instead like this?\n```python\nalias_kwargs = {\"alias\": kwargs[\"alias\"]} if \"alias\" in kwargs else {}\n```\nLooking at the final version of the changes as a whole, this is not changed later on so IMHO the simplification is worth it.",
+    "target_path": "tests/mail/custombackend.py",
+    "target_comment_id": 3209227232
+  },
+  {
+    "repo": "django/django",
+    "number": 21209,
+    "is_merged": true,
+    "target_comment": "Can you add a `.. versionchanged:: 6.1` note?",
+    "target_path": "docs/howto/auth-remote-user.txt",
+    "target_comment_id": 3183788331
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 21191,
+    "is_merged": false,
+    "target_comment": "indentation",
+    "target_path": "pandas/conftest.py",
+    "target_comment_id": 190688379
+  },
+  {
+    "repo": "django/django",
+    "number": 21344,
+    "is_merged": true,
+    "target_comment": "I've heard other reviewers ask contributors to reuse models, while being somewhat conscious of test isolation. I see we have a custom manager that performs filtering on `class FilteredManager`. Did you look into reusing that?",
+    "target_path": "tests/admin_views/admin.py",
+    "target_comment_id": 3290487108
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175374,
+    "is_merged": true,
+    "target_comment": "Consider dropping this section divider comment. Divider comments like this can drift out of sync as tests are added or reordered; the device grouping is already clear from the test names and the explanatory comment on the fixture constant above. This is optional and consistent with the pre-existing divider at line 85, so feel free to leave both as-is.",
+    "target_path": "tests/components/overkiz/test_water_heater.py",
+    "target_comment_id": 3513874074
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 44611,
+    "is_merged": true,
+    "target_comment": "not really what we want for now. The above fix you did with passing it as `timm_kwargs` should be enough and `consolidate_backbone_kwargs_to_config` will put it inside timm config",
+    "target_path": "src/transformers/models/timm_backbone/configuration_timm_backbone.py",
+    "target_comment_id": 2923895009
+  }
+]

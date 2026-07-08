@@ -1,0 +1,14 @@
+[
+  {
+    "repo": "huggingface/transformers",
+    "number": 43274,
+    "diff_hunk": "@@ -0,0 +1,1193 @@\n+# Copyright 2026 The PaddlePaddle Team and The HuggingFace Inc. team. All rights reserved.\n+#\n+# Licensed under the Apache License, Version 2.0 (the \"License\");\n+# you may not use this file except in compliance with the License.\n+# You may obtain a copy of the License at\n+#\n+#     http://www.apache.org/licenses/LICENSE-2.0\n+#\n+# Unless required by applicable law or agreed to in writing, software\n+# distributed under the License is distributed on an \"AS IS\" BASIS,\n+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n+# See the License for the specific language governing permissions and\n+# limitations under the License.\n+\n+import math\n+from dataclasses import dataclass\n+from typing import Optional\n+\n+import numpy as np\n+import torch\n+import torch.nn as nn\n+import torch.nn.functional as F\n+import torchvision.transforms.v2.functional as tvF\n+\n+from ...activations import ACT2FN\n+from ...backbone_utils import consolidate_backbone_kwargs_to_config, load_backbone\n+from ...configuration_utils import PreTrainedConfig\n+from ...feature_extraction_utils import BatchFeature\n+from ...image_processing_utils_fast import (\n+    BaseImageProcessorFast,\n+    group_images_by_shape,\n+    reorder_images,\n+)\n+from ...image_utils import (\n+    SizeDict,\n+)\n+from ...modeling_outputs import BaseModelOutputWithNoAttention\n+from ...modeling_utils import PreTrainedModel\n+from ...processing_utils import ImagesKwargs, Unpack\n+from ...utils import TransformersKwargs\n... [truncated]",
+    "comment": "Same here more of a fan to have these validations in the config"
+  },
+  {
+    "repo": "django/django",
+    "number": 21229,
+    "diff_hunk": "@@ -2960,29 +2968,40 @@ def test_change_view(self):\n                 self.assertEqual(response.status_code, 403)\n                 response = self.client.post(change_url_1, {\"name\": \"changed\"})\n                 self.assertEqual(\n-                    RowLevelChangePermissionModel.objects.get(id=1).name, \"odd id\"\n+                    RowLevelChangePermissionModel.objects.get(",
+    "comment": "```suggestion\n                    RowLevelChangePermissionModel.objects.get(pk=r1.pk)\n```"
+  }
+]

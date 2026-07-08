@@ -1,0 +1,162 @@
+{
+  "C1_P1": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 3.4779025585800993,
+    "accuracy": 0.66,
+    "precision": 0.6666666666666666,
+    "recall": 0.9375,
+    "f1": 0.7792207792207793
+  },
+  "C1_P2": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 3.5442932205009856,
+    "accuracy": 0.68,
+    "precision": 0.6739130434782609,
+    "recall": 0.96875,
+    "f1": 0.7948717948717948
+  },
+  "C1_P3": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 6.750420818960411,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  },
+  "C1_P4": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.6966302574190193,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  },
+  "C2_P1": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.6520206041797065,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C2_P2": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.915127526919241,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C2_P3": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 4.359027321280155,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C2_P4": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.675635911219288,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C3_P1": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.6147739737993105,
+    "accuracy": 0.62,
+    "precision": 0.6382978723404256,
+    "recall": 0.9375,
+    "f1": 0.759493670886076
+  },
+  "C3_P2": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.8050837714600494,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C3_P3": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 4.946572562020447,
+    "accuracy": 0.66,
+    "precision": 0.6595744680851063,
+    "recall": 0.96875,
+    "f1": 0.7848101265822784
+  },
+  "C3_P4": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.6471589453407796,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  },
+  "C4_P1": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.4797565647412556,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  },
+  "C4_P2": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.8421064469590784,
+    "accuracy": 0.7,
+    "precision": 0.6808510638297872,
+    "recall": 1.0,
+    "f1": 0.810126582278481
+  },
+  "C4_P3": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 4.828221885461534,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  },
+  "C4_P4": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.549605496040604,
+    "accuracy": 0.68,
+    "precision": 0.6666666666666666,
+    "recall": 1.0,
+    "f1": 0.8
+  }
+}
