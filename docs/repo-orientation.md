@@ -22,8 +22,9 @@
 | Exp2 | ✅ 完成（已定稿，勿改） | 传统 ML（SVM/RF/XGB/LGBM）做 Merge Prediction |
 | Exp3 | ⏭️ 跳过 | DL（Code2Vec/CodeBERT）—— 本项目不做 |
 | Exp4 | ✅ 完成 | LLM + Prompt Engineering，两个任务的 16 条件网格 |
-| Exp5 | 🚧 设计完成 | AI 生成代码的代码审查（复用 Exp2+Exp4 模型做泛化测试）见 `docs/specs/2026-07-08-exp5-*.md` |
-| Exp6/7 | 未开始 | 上下文/Prompt 改进；VSCode 插件 |
+| Exp5 | ✅ 完成 | AI 生成代码泛化测试（复用 Exp2+Exp4 模型）。代码 `Experiment5/src/`，报告 `Experiment5/report/实验五结果分析.md` |
+| Exp6 | 🚧 下一步 | 在 Exp5 AI 数据上改进上下文/Prompt（只优化输入，不改模型）。指导书 `Experiment1/docs/实验指导书_代码审查.md` §6 |
+| Exp7 | 未开始 | VSCode 插件，集成 Exp2–6 模型 |
 
 ## 共享数据（实验一产出）
 
@@ -67,6 +68,30 @@ join 键：`prs.(repo,number)` ↔ 其他表 `(repo,pr_number)`。
 - 矩阵：4 上下文 × 4 Prompt × 两任务；分类从 Exp2 test 抽 50，生成从 70 条真值抽 50。
 - 生成真值口径：每 PR **首条顶层 inline comment**（最早、非回复），一 PR 一样本。
 - 缓存 key = `(task, context, prompt, pr_key)`，重跑跳过已完成调用（断点续传 + 省钱）。
+
+**Exp5（`Experiment5/src/`，纯下游适配层，零改动复用 Exp2/Exp4）**
+- `config.py` 把兄弟实验 `src` 以别名 `exp2src` / `exp4src` 载入；LLM 缓存目录**指向 Exp4 cache**（共享，对照命中不重复付费）。
+- `data.py`：AI 分类池 253 / AI 生成池 72 / 匹配人类对照。**对照只从 Exp2 held-out test 抽样**（`matched_human_control`），按 AI 的 `repo×is_merged` 分布匹配——早期从全人类池抽会 84% 命中 train/val，是效度陷阱，已堵。
+- `ml_features.py`：复用 Exp2 `extract_*` + 用 features.parquet 里 50 词表构造 `TfidfVectorizer(vocabulary=...)`，在 Exp2 人类语料上 fit 恢复 IDF，对 AI/对照**只 transform**（自检 bit-level 重现，max diff 2e-16）。
+- `report/实验五结果分析.md`：对齐指导书 5.9 五道思考题的完整结果分析。
+
+## Exp5 关键结论（Exp6 的出发点）
+
+- **ML 泛化确实下降**：pre-review F1，树模型在 AI 上 0.58–0.63 vs 人类 test 0.80+、无泄露对照 0.77–0.86，掉 0.17–0.23，非分布假象。
+- **⚠️ 两个"AI 更好"是类别偏向假象，别被骗**：AI 分类池合并率 **74%**（正类多）。LLM 分类 AI 侧 F1（0.84–0.86）高于人类，但 **recall≈1.0 / precision≈0.75**——模型几乎"全判 merge"，撞上高正类率才虚高，判别力其实弱。ML 的 SVM 同理（AI recall 0.94）。**评 AI 分类务必看 precision/recall，别只看 F1/Accuracy。**
+- **BLEU/ROUGE 在生成任务无区分度**：BLEU≈0.5–1.5（/100）、ROUGE-L≈0.04–0.06，人类/AI 互有高低。表面 n-gram 匹配不适合评开放式审查意见 → Exp6 需要语义/有用性层面的评价视角。
+- **上下文敏感度（指导书假设"AI 更依赖完整上下文"）**：分类 C4−C1 增益 AI≈0（假设不成立）；生成 C4−C1 AI +0.005 而人类 −0.005（微弱成立）。**当前 C1–C4 上下文太弱**（只有 diff/PR 描述/commit），未触及仓库级/跨文件/Issue 上下文——这正是 Exp6 要补的。
+- 错误案例：AI 假阳性 PR 多带 GH# 引用+测试+详尽注释，"表面完整度高"易骗过判别器；且"未合并≠代码差"（流程性拒绝是标签噪声）。
+
+## Exp6 先验（改进 AI 代码审查，重点优化输入而非模型）
+
+- **数据直接读 Exp5 的 AI 池**：分类 `Experiment5/results/samples/classify_ai.json`(50)、生成 `generate_ai.json`(72)；对照/人类锚点沿用 Exp5 口径。不要重新采集或重新识别 AI。
+- **复用 Exp4 `llm_client`（共享缓存目录）**：新上下文/Prompt 只要改变 messages，语义 key 的 content_hash 会变，不会误命中旧缓存；未变的直接命中省钱。
+- **Exp6 = 在 Exp5 基线上做上下文增强 + Prompt 优化**（指导书 6.4）。当前缺口即改进方向：
+  - 上下文：加**修改前后完整代码 / 修改函数所在文件 / 调用关系 / Issue 描述 / 历史审查意见 / 仓库级上下文**（Exp4 的 C1–C4 只到 diff+PR描述+commit）。⚠️ Exp1 只存了 patch 不存完整文件，仓库级上下文需回仓库抓或用 base_sha/head_sha——这是 Exp6 的主要新增工作量。
+  - Prompt：Exp4 已有 Zero-shot/Few-shot/CoT/Role，Exp6 需补 **Self-Reflection、多轮交互式**。
+- **对比基线**：Exp6 的核心交付是"改进后 vs Exp5 基线"的性能对比，指标沿用 Acc/P/R/F1 + BLEU/ROUGE + 推理时间。**报告务必用 precision/recall 而非仅 F1**（见上"类别偏向假象"）。
+- 生成任务真值口径与 Exp4/5 逐字一致：每 PR 首条顶层 inline comment。
 
 ## 常见坑
 
