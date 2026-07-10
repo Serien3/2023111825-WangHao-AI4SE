@@ -1,0 +1,57 @@
+{
+  "cases": [
+    {
+      "case_type": "misclassification",
+      "repo": "pandas-dev/pandas",
+      "number": 66061,
+      "condition": "C1_P1",
+      "true_merge": false,
+      "pred_merge": true,
+      "suggested_attribution": "局部 diff 信号弱 / AI 代码风格统一导致模型过度乐观或保守（需人工复核）",
+      "diff_snippet": "--- pandas/io/parsers/arrow_parser_wrapper.py ---\n@@ -54,6 +54,10 @@ def _parse_kwds(self) -> None:\n             raise ValueError(\n                 \"The pyarrow engine doesn't support passing a dict for na_values\"\n             )\n+        # pyarrow's null_values only accepts strings, so reject any non-string\n+        #  na_values up front instead of silently ignoring them.\n+        if not all(isinstance(na_value, str) for na_value in na_values):\n+            raise TypeError(\"The 'pyarrow' engine requires all na_values to be strings\")\n         self.na_values = list(self.kwds[\"na_values\"])\n \n     def _get_pyarrow_options(self) -> None:\n@@ -152,19 +156,13 @@ def _get_convert_options(self):\n \n         try:\n             convert_options = pyarrow_csv.ConvertOptions(**self.convert_options)\n-        except TypeError as err:\n+        except TypeError:\n+            # Non-string na_values are rejected in _parse_kwds, so any remaining\n+            #  TypeError here is from invalid usecols/include_columns.\n             include = self.convert_options.get(\"include_columns\", None)\n             if include is not None:\n                 self._validate_usecols(include)\n \n-            nulls = self.conve\n... [truncated]"
+    },
+    {
+      "case_type": "misclassification",
+      "repo": "pandas-dev/pandas",
+      "number": 66042,
+      "condition": "C1_P1",
+      "true_merge": false,
+      "pred_merge": true,
+      "suggested_attribution": "局部 diff 信号弱 / AI 代码风格统一导致模型过度乐观或保守（需人工复核）",
+      "diff_snippet": "--- pandas/core/dtypes/missing.py ---\n@@ -532,7 +532,12 @@ def _array_equivalent_object(\n         left_remaining = left\n         right_remaining = right\n \n-    for left_value, right_value in zip(left_remaining, right_remaining, strict=True):\n+    # left_remaining/right_remaining may be 2-D here (e.g. DataFrame block\n+    # values that reached this fallback); use .flat to compare element-wise\n+    # rather than row-wise (GH#43008)\n+    for left_value, right_value in zip(\n+        left_remaining.flat, right_remaining.flat, strict=True\n+    ):\n         if left_value is NaT and right_value is not NaT:\n             return False\n \n@@ -542,6 +547,12 @@ def _array_equivalent_object(\n         elif isinstance(left_value, float) and np.isnan(left_value):\n             if not isinstance(right_value, float) or not np.isnan(right_value):\n                 return False\n+        elif isinstance(left_value, (ABCSeries, ABCDataFrame)):\n+            # GH#43008 nested Series/DataFrame: recurse via equals so that NaNs\n+            # in the same location compare equal (a plain `!=` treats NaN as\n+            # unequal to NaN). equals also returns False for a type mismatch.\n+            if not left_value.e\n... [truncated]"
+    },
+    {
+      "case_type": "misclassification",
+      "repo": "pandas-dev/pandas",
+      "number": 65940,
+      "condition": "C1_P1",
+      "true_merge": false,
+      "pred_merge": true,
+      "suggested_attribution": "局部 diff 信号弱 / AI 代码风格统一导致模型过度乐观或保守（需人工复核）",
+      "diff_snippet": "--- pandas/tests/scalar/timedelta/test_constructors.py ---\n@@ -656,6 +656,10 @@ def test_construction_out_of_bounds_td64s(val, unit):\n         (\"PT-6H3M\", Timedelta(hours=-6, minutes=3)),\n         (\"-PT6H3M\", Timedelta(hours=-6, minutes=-3)),\n         (\"-PT-6H+3M\", Timedelta(hours=6, minutes=-3)),\n+        # GH#48122: hour/minute components may have more than two digits\n+        (\"PT100H\", Timedelta(hours=100)),\n+        (\"PT100M\", Timedelta(minutes=100)),\n+        (\"P0DT999H999M999S\", Timedelta(hours=999, minutes=999, seconds=999)),\n     ],\n )\n def test_iso_constructor(fmt, exp):\n@@ -667,7 +671,6 @@ def test_iso_constructor(fmt, exp):\n     [\n         \"PPPPPPPPPPPP\",\n         \"PDTHMS\",\n-        \"P0DT999H999M999S\",\n         \"P1DT0H0M0.0000000000000S\",\n         \"P1DT0H0M0.S\",\n         \"P\","
+    },
+    {
+      "case_type": "misclassification",
+      "repo": "pandas-dev/pandas",
+      "number": 65951,
+      "condition": "C1_P1",
+      "true_merge": false,
+      "pred_merge": true,
+      "suggested_attribution": "局部 diff 信号弱 / AI 代码风格统一导致模型过度乐观或保守（需人工复核）",
+      "diff_snippet": "--- pandas/tests/io/parser/common/test_float.py ---\n@@ -140,6 +140,18 @@ def test_precise_xstrtod_large_mantissa(c_parser_only, value):\n     assert result == float(value)\n \n \n+def test_precise_xstrtod_leading_zeros(c_parser_only):\n+    # GH#64184\n+    # Leading zeros must not consume the 17-significant-digit budget in the\n+    # precise_xstrtod fallback (reached when a thousands separator is set),\n+    # which would otherwise push trailing significant digits into the\n+    # exponent, e.g. \"000000000010084566\" -> 10084560.0 instead of 10084566.0.\n+    parser = c_parser_only\n+    data = \"val\\n000000000010084566.0\\n\"\n+    result = parser.read_csv(StringIO(data), thousands=\",\")[\"val\"][0]\n+    assert result == 10084566.0\n+\n+\n @pytest.mark.parametrize(\n     \"value\", [\"81e31d04049863b72\", \"d81e31d04049863b72\", \"81e3104049863b72\"]\n )\n--- pandas/tests/tools/test_to_numeric.py ---\n@@ -910,3 +910,29 @@ def test_large_exponent_coerce():\n     result = to_numeric(ser, errors=\"coerce\")\n     expected = Series([np.inf])\n     tm.assert_series_equal(result, expected)\n+\n+\n+@pytest.mark.parametrize(\n+    \"data, expected\",\n+    [\n+        # mixing in a float forces the float64 result dtype\n+        ([10\n... [truncated]"
+    },
+    {
+      "case_type": "misclassification",
+      "repo": "pandas-dev/pandas",
+      "number": 65976,
+      "condition": "C1_P1",
+      "true_merge": false,
+      "pred_merge": true,
+      "suggested_attribution": "局部 diff 信号弱 / AI 代码风格统一导致模型过度乐观或保守（需人工复核）",
+      "diff_snippet": "--- pandas/core/computation/ops.py ---\n@@ -445,25 +445,32 @@ def stringify(value):\n                 encoder = pprint_thing\n             return encoder(value)\n \n+        def convert(value):\n+            if isinstance(value, (int, float)):\n+                value = stringify(value)\n+            value = Timestamp(ensure_decoded(value))\n+            if value.tz is not None:\n+                value = value.tz_convert(\"UTC\")\n+            return value\n+\n+        def convert_term(term) -> None:\n+            value = term.value\n+            if term.is_scalar:\n+                term.update(convert(value))\n+            elif isinstance(value, list):\n+                # ``==``/``in`` comparisons are rewritten to membership ops\n+                # with the right-hand side wrapped in a list (see\n+                # _rewrite_membership_op), so convert the elements too\n+                # (GH#35595)\n+                term.update([convert(element) for element in value])\n+\n         lhs, rhs = self.lhs, self.rhs\n \n-        if is_term(lhs) and lhs.is_datetime and is_term(rhs) and rhs.is_scalar:\n-            v = rhs.value\n-            if isinstance(v, (int, float)):\n-                v = stringify(v)\n-           \n... [truncated]"
+    }
+  ],
+  "type_counts": {
+    "misclassification": 5
+  }
+}

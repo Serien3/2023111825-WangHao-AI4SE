@@ -1,0 +1,252 @@
+[
+  {
+    "repo": "home-assistant/core",
+    "number": 175027,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65746,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65978,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65750,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175336,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66041,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66061,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66042,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66081,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174935,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175287,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 65215,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65950,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 65405,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69225,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69069,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66003,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65794,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65784,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175285,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69006,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175210,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65940,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66092,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65947,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68785,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65953,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65951,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65790,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68078,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65976,
+    "is_merged": false
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 165530,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65980,
+    "is_merged": true
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 63368,
+    "is_merged": false
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46884,
+    "is_merged": false
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69079,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65861,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66029,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66099,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65927,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175177,
+    "is_merged": false
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 41250,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 171356,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65999,
+    "is_merged": true
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46988,
+    "is_merged": false
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68983,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65958,
+    "is_merged": true
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175028,
+    "is_merged": true
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66093,
+    "is_merged": false
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65782,
+    "is_merged": true
+  }
+]

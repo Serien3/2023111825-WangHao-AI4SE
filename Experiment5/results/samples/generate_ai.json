@@ -1,0 +1,578 @@
+[
+  {
+    "repo": "apache/airflow",
+    "number": 60507,
+    "is_merged": false,
+    "target_comment": "`random.random` is a function, not a class, so `:py:class:` is the wrong role and may produce an incorrect/failed cross-reference. Use the Python function role (e.g., `:py:func:`) for `random.random`.\n```suggestion\n``macros.random``                   The standard lib's :py:func:`random.random`\n```",
+    "target_path": "airflow-core/docs/templates-ref.rst",
+    "target_comment_id": 3066472263
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 62918,
+    "is_merged": false,
+    "target_comment": "I'm not great with SQL so I may be wrong here, but passing on feedback I got in the past:  We should add a `selectinload` to make this more efficient.  Without it, accessing `deadline.callback` and `deadline.dagrun` inside `handle_miss()` triggers a separate DB query for each deadline in the loop. With `selectinload`, those  are loaded one time up front, saving a bunch of DB lookups.\n\nThe `~Deadline.missed` is purely semantics and does the same as yours.\n\n```suggestion\n                        pending_deadlines = session.scalars(\n                            select(Deadline)\n                            .join(DagRun)\n                            .where(DagRun.id == self.id, ~Deadline.missed)\n                            .options(selectinload(Deadline.callback), selectinload(Deadline.dagrun))\n ```\n\n\n\nMayyybe it's time to consider moving that db lookup into handle_miss.... but that doesn't have to happen in this PR",
+    "target_path": "airflow-core/src/airflow/models/dagrun.py",
+    "target_comment_id": 2955194715
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 63368,
+    "is_merged": false,
+    "target_comment": "Right now `def __str__` assumes that the detail attribute is always present in `ServerResponseError`. As evidenced by failing CI, this is not always true. Try adding doing something like this instead:\n\n```\ndef __str__(self) -> str:\n    base = super().__str__()\n    detail = getattr(self, \"detail\", None)\n\n    if detail is not None:\n        return f\"{base}\\nDetail: {detail}\"\n\n    return base\n```\n\nUsing `if detail is not None` instead of `if self.detail` or `if not self.detail` has the added benefit of including falsy values like `{}` or `\"\"`, which might be considered meaningful API messages.",
+    "target_path": "task-sdk/src/airflow/sdk/api/client.py",
+    "target_comment_id": 2937060356
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 63499,
+    "is_merged": false,
+    "target_comment": "If I am not mistaken, this should be enough\n\n```suggestion\n        if self.enable_hook_level_lineage:\n```",
+    "target_path": "providers/amazon/src/airflow/providers/amazon/aws/hooks/s3.py",
+    "target_comment_id": 2940724774
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 63797,
+    "is_merged": false,
+    "target_comment": "Creating `_tmp_sd_dag_id_idx` is risky and likely unnecessary: the pagination queries in this function `ORDER BY id` (PK) and never `ORDER BY dag_id`, so this index won’t address the reported filesort issue but can still fail (e.g., if a prior attempt crashed before dropping the index, `CREATE INDEX` will error on rerun) and can cause heavy DDL/metadata locks on large tables. Consider removing this index entirely, or if an index is truly needed, use the existing `temporary_index(...)` helper (which checks for an existing matching index and guarantees cleanup via `finally`) instead of raw `CREATE INDEX` SQL.\n```suggestion\n\n```",
+    "target_path": "airflow-core/src/airflow/migrations/versions/0101_3_2_0_ui_improvements_for_deadlines.py",
+    "target_comment_id": 3025340408
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 65335,
+    "is_merged": true,
+    "target_comment": "I may be missing something, but isn't this going to dump the error messages if there is an error and result in the user seeing `eks_get_token failed with exit code 1. Output was:` with no reason since it got tossed into `/dev/null`?  Maybe as a compromise should we write to a tempfile and read that file back on error?  That way it's a clean output in the happy case and we still get the error messages?",
+    "target_path": "providers/amazon/src/airflow/providers/amazon/aws/hooks/eks.py",
+    "target_comment_id": 3222853635
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 66220,
+    "is_merged": true,
+    "target_comment": "Here the `max_rows` ignored when results fit in one page. Truncate after the first fetch too, and add a test will be better.",
+    "target_path": "providers/elasticsearch/src/airflow/providers/elasticsearch/utils/sql.py",
+    "target_comment_id": 3316097807
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 66893,
+    "is_merged": true,
+    "target_comment": "Looks like the PPG2 branch's handling of `raw_cursor` was kept:\n\n```python\nraw_cursor = conn.extra_dejson.get(\"cursor\")  # PPG3, default None\nraw_cursor = conn.extra_dejson.get(\"cursor\", False)  # PPG2, default False\n```\nAlthough both are falsy - are you sure this is safe?\n",
+    "target_path": "providers/postgres/src/airflow/providers/postgres/hooks/postgres.py",
+    "target_comment_id": 3239526946
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68078,
+    "is_merged": true,
+    "target_comment": "No newsfragment is needed for bug fixes - only for user facing important changes. Please revert / remove the newsfragment.",
+    "target_path": "airflow-core/newsfragments/68078.bugfix.rst",
+    "target_comment_id": 3379409672
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68411,
+    "is_merged": true,
+    "target_comment": "Is this needed here? It gets overridden a couple lines below with `mock_reader.return_value = generator`.",
+    "target_path": "providers/elasticsearch/tests/unit/elasticsearch/hooks/test_elasticsearch.py",
+    "target_comment_id": 3408697520
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68421,
+    "is_merged": true,
+    "target_comment": "No need",
+    "target_path": "airflow-core/newsfragments/68354.bugfix.rst",
+    "target_comment_id": 3403941730
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68785,
+    "is_merged": false,
+    "target_comment": "This condition is always verified, `tags` is a `FilterParam` object. ",
+    "target_path": "airflow-core/src/airflow/api_fastapi/core_api/routes/public/dag_run.py",
+    "target_comment_id": 3467798930
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68869,
+    "is_merged": true,
+    "target_comment": "to remove",
+    "target_path": "airflow-core/newsfragments/68869.bugfix.rst",
+    "target_comment_id": 3482318219
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68916,
+    "is_merged": true,
+    "target_comment": "We currently don't use newsgraments in providers ",
+    "target_path": "providers/celery/newsfragments/68916.feature.rst",
+    "target_comment_id": 3477235347
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68922,
+    "is_merged": false,
+    "target_comment": "Should we do something to ensure this stays transactional? If we resume the cluster, then fail sometime between now and the deletion then the cluster is now running unexpectedly when the user thought it was paused (essentially the inverse of the situation that we find ourselves in now).\n\nWe should at least make this an opt in perhaps if we can't ensure the operation is transactional. ",
+    "target_path": "providers/amazon/src/airflow/providers/amazon/aws/operators/redshift_cluster.py",
+    "target_comment_id": 3463747958
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68939,
+    "is_merged": true,
+    "target_comment": "`rowCount` and `totalRevenue` aren't referenced anywhere",
+    "target_path": "java-sdk/scala_spark_example/src/scala/org/apache/airflow/example/ScalaSparkExample.scala",
+    "target_comment_id": 3472133862
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68951,
+    "is_merged": true,
+    "target_comment": "Are the helper and cosntant needed here? They are only being used once. Also, is 500 + \"resource not found:\" a documented Keycloak response that we can reliably depend on?",
+    "target_path": "providers/keycloak/src/airflow/providers/keycloak/auth_manager/keycloak_auth_manager.py",
+    "target_comment_id": 3469575597
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68960,
+    "is_merged": true,
+    "target_comment": "This test case should include both formats.",
+    "target_path": "task-sdk/tests/task_sdk/coordinators/test_subprocess.py",
+    "target_comment_id": 3472337123
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 68983,
+    "is_merged": true,
+    "target_comment": "How about introducing another new Dag definition (e.g. xcom numeric casting) to showcase and exercise that we support `Task A: int -> Task B: Long -> Task C: double` should success instead of adding too much task within the existing example Dag.\n\nAddtionally, the new Dag we're going to introduce can also exercise the custom xcom key feature that we fix in this PR.",
+    "target_path": "java-sdk/example/src/java/org/apache/airflow/example/AnnotationExample.java",
+    "target_comment_id": 3474744904
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69064,
+    "is_merged": true,
+    "target_comment": "Should these use `Mapping` and `Sequence` from collections.abc instead? Or if we add a case for `str` too, the last isinstance check can be against `Iterable`.",
+    "target_path": "airflow-core/src/airflow/migrations/versions/0055_3_0_0_remove_pickled_data_from_dagrun_table.py",
+    "target_comment_id": 3484424273
+  },
+  {
+    "repo": "apache/airflow",
+    "number": 69079,
+    "is_merged": true,
+    "target_comment": "Not sure if I missed anything. This seems to have the potential to be stuck forever (until the process is killed) if the frame it expects got dropped or corrupt for whatever reason. This should probably add a timeout or something.",
+    "target_path": "ts-sdk/src/coordinator/comm-channel.ts",
+    "target_comment_id": 3489981675
+  },
+  {
+    "repo": "django/django",
+    "number": 21492,
+    "is_merged": false,
+    "target_comment": "Emphasizing superlatives like `*silently*` with italics is an LLM-ism, please avoid.",
+    "target_path": "docs/ref/models/querysets.txt",
+    "target_comment_id": 3416060893
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 154350,
+    "is_merged": true,
+    "target_comment": "I don't think the presence of `metadata` field makes much sense here for the LLM use case. We should consider filtering it out. Though that's obviously for another PR.",
+    "target_path": "tests/helpers/test_llm.py",
+    "target_comment_id": 2488268143
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 161093,
+    "is_merged": false,
+    "target_comment": "Duplicate import detected: Both 'copy' module (line 3) and 'from copy import deepcopy' (line 4) are imported. Since only 'deepcopy' is used in the new test code, the 'import copy' on line 3 should be removed to avoid redundancy.\n```suggestion\n\n```",
+    "target_path": "tests/components/roborock/test_image.py",
+    "target_comment_id": 2700450780
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 162374,
+    "is_merged": true,
+    "target_comment": "Could we make this translatable?",
+    "target_path": "homeassistant/components/smarttub/light.py",
+    "target_comment_id": 2772690409
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 162376,
+    "is_merged": true,
+    "target_comment": "We can still do an attempt on finding the device on the network and propose the user to setup the integration, because if they have a smarttub attached to their network, we can be quite sure they have an account set up",
+    "target_path": "homeassistant/components/smarttub/quality_scale.yaml",
+    "target_comment_id": 2850182208
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 165530,
+    "is_merged": false,
+    "target_comment": "The emitted message for the `X.datetime.now()`/`utcnow()` case builds the displayed expression as `datetime.now()` (using `expr.attrname`), which is incorrect for `datetime.datetime.now()` and for aliased imports (e.g. `dt.datetime.now`). This will produce confusing guidance. Use the full call expression (e.g., `node.func.as_string()` / `node.as_string()`) or include the base name so the reported disallowed API matches what was actually written.\n",
+    "target_path": "pylint/plugins/hass_imports.py",
+    "target_comment_id": 2935185491
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 168009,
+    "is_merged": false,
+    "target_comment": "This `except` clause uses Python 2 syntax and will raise a `SyntaxError` in Python 3. Catch multiple exceptions using a tuple, e.g. `except (ephem.AlwaysUpError, ephem.NeverUpError):`.\n```suggestion\n    except (ephem.AlwaysUpError, ephem.NeverUpError):\n```",
+    "target_path": "homeassistant/components/moon/coordinator.py",
+    "target_comment_id": 3068809060
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 169524,
+    "is_merged": true,
+    "target_comment": "Align the stated minimum Python version with the repo’s actual requirement (pyproject.toml currently requires >=3.14.2), e.g., mention \">=3.14.2\" instead of just \"3.14\" to avoid suggesting unsupported patch-level APIs/behavior.\n```suggestion\n- Home Assistant officially supports Python >=3.14.2 as its minimum version. Do not flag syntax or features that require Python 3.14 as issues, and do not suggest workarounds for older Python versions.\n```",
+    "target_path": "AGENTS.md",
+    "target_comment_id": 3165931944
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 170332,
+    "is_merged": true,
+    "target_comment": "Patch the correct refresh code path instead of `PrusaLinkUpdateCoordinator._fetch_data`, since all concrete coordinators override `_fetch_data` and this patch won’t actually prevent coordinator refreshes during the button press (making the anti-race intent ineffective). Consider patching `homeassistant.helpers.update_coordinator.DataUpdateCoordinator.async_request_refresh`/`_async_update_data`, or patch each concrete coordinator’s `_fetch_data` (e.g., `StatusCoordinator._fetch_data`, `JobUpdateCoordinator._fetch_data`, etc.) so the test reliably avoids concurrent refreshes.",
+    "target_path": "tests/components/prusalink/test_button.py",
+    "target_comment_id": 3219863356
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 171186,
+    "is_merged": true,
+    "target_comment": "Update the concurrency group key to include the dispatched PR number (e.g., the workflow_dispatch input) so checks for different PRs don’t share the same group and cancel each other when ref is the default branch.\n",
+    "target_path": ".github/workflows/check-requirements.lock.yml",
+    "target_comment_id": 3265004049
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 171356,
+    "is_merged": true,
+    "target_comment": "The `KeyError` handler currently wraps the entire `await self._update_fan(...)` call, so a `KeyError` raised from inside `_update_fan` (or deeper dependencies) would be incorrectly reported as `invalid_fan_mode`. To avoid misclassifying unrelated `KeyError`s, resolve `mode = LYRIC_FAN_MODES[fan_mode]` outside the `try`/`await` that catches `LYRIC_EXCEPTIONS`, then call `_update_fan` with `mode` inside a separate `try` that only catches `LYRIC_EXCEPTIONS`.",
+    "target_path": "homeassistant/components/lyric/climate.py",
+    "target_comment_id": 3267088802
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174873,
+    "is_merged": true,
+    "target_comment": "Instead of calling `async_update_entity`, we should trigger a natural refresh, so either use the freezer to skip time or get a callback from the mock to have it update (if it's a push based approach)",
+    "target_path": "tests/components/roborock/test_time.py",
+    "target_comment_id": 3479988954
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174880,
+    "is_merged": true,
+    "target_comment": "Import the existing `PARAM_HEADER_DETECT` from `const.py` rather than redefining it here. The constant `PARAM_HEADER_DETECT = \"header_detect\"` already exists in `const.py:31` and is consumed by `camera.py:14`. Re-declaring the same literal in this module duplicates the value and risks the two definitions diverging over time. Importing it keeps a single source of truth (the test that imports `PARAM_HEADER_DETECT` from this module will still resolve it, since it remains in the module namespace).",
+    "target_path": "homeassistant/components/imou/switch.py",
+    "target_comment_id": 3479850568
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174897,
+    "is_merged": false,
+    "target_comment": "Consider gating the Face event entity on `can_detect_face` instead of the broad `feature_flags.has_smart_detect`. As written, a `Face` event entity is created on every camera that supports any smart detection — including cameras that cannot detect faces at all (the test `doorbell` fixture is exactly such a case: its `smart_detect_types` is `[PERSON, VEHICLE, ANIMAL, PACKAGE]`, so `can_detect_face` is `False`, yet it still gets a Face entity). uiprotect 15.1.0 exposes `Camera.can_detect_face` (`SmartDetectObjectType.FACE in feature_flags.smart_detect_types`), and the integration already gates other object-type-specific entities on the precise flag (`can_detect_person`/`can_detect_vehicle` in `binary_sensor.py:416`/`:424` and `switch.py:166`/`:176`). Note the sibling vehicle event entity currently uses the broad flag too, and switching this would require adding `SmartDetectObjectType.FACE` to the doorbell test fixture.",
+    "target_path": "homeassistant/components/unifiprotect/event.py",
+    "target_comment_id": 3480780325
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174951,
+    "is_merged": true,
+    "target_comment": "Update the integration's serial error handling together with this bump, because pymonoprice 0.6 switches its serial backend from pyserial to serialx.\n\nIn 0.6, `get_monoprice`/`Monoprice.__init__` open the port via `serialx.serial_for_url(...)`. Per serialx's pyserial-migration guide, connection failures are no longer normalized to `serial.SerialException`; instead serialx raises native exceptions (`FileNotFoundError`/`OSError`) or its own `serialx.SerialException`, which is an unrelated class from pyserial's `serial.SerialException`.\n\nThe integration still catches `from serial import SerialException` in `__init__.py` (`async_setup_entry`), `config_flow.py` (`validate_input`), and `media_player.py` (`update`). After this bump those handlers will no longer catch real connection errors, so setup will raise an unhandled exception instead of `ConfigEntryNotReady`, the config flow will surface an \"unknown\" error instead of `cannot_connect`, and zone updates will stop degrading gracefully. The existing tests still patch these calls to raise `serial.SerialException`, so they keep passing and mask the regression. Please update the exception handling (and the corresponding tests) to catch the exceptions serialx actually raises.",
+    "target_path": "homeassistant/components/monoprice/manifest.json",
+    "target_comment_id": 3485657263
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 174980,
+    "is_merged": false,
+    "target_comment": "The user-facing field description contains a spelling error (\"overriden\" should be \"overridden\") and uses typographic/smart quotes (‘ ’) around `pending`, which is inconsistent with the straight quotes used throughout the rest of the codebase's strings. Using straight single quotes keeps it consistent with other strings.",
+    "target_path": "homeassistant/components/alarm_control_panel/strings.json",
+    "target_comment_id": 3486369619
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175160,
+    "is_merged": true,
+    "target_comment": "The expected version here does not match the deprecation message emitted by the implementation. `async_initialize_triggers` logs \"...will be removed in Home Assistant 2027.8...\" (and `breaks_in_ha_version=\"2027.8.0\"`), so this substring assertion for `2027.2` will never match `caplog.text`.",
+    "target_path": "tests/helpers/test_trigger.py",
+    "target_comment_id": 3496259883
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175177,
+    "is_merged": false,
+    "target_comment": "The new test only exercises the fallback branch where `_last_on_fan_mode` is empty (device 0 starts off with `fan_mode=5`, so the restore resolves to `FAN_AUTO`). The core behavior advertised by the PR — remembering the last non-off fan mode per AC slot and restoring *that* value (lines 82-84) when later sending an active command — is never covered. Consider adding a case that first establishes a known non-off fan mode (e.g. via `set_fan_mode`), then triggers an active command from an off/fan-off state and asserts the restored value equals the previously seen fan mode rather than `FAN_AUTO`.",
+    "target_path": "homeassistant/components/ccm15/coordinator.py",
+    "target_comment_id": 3496639328
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175220,
+    "is_merged": true,
+    "target_comment": "this is to avoid calling `self.todo_items` twice per call, since some integrations override the property and don't cache (like `shopping_list`).",
+    "target_path": "homeassistant/components/todo/__init__.py",
+    "target_comment_id": 3501260347
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175285,
+    "is_merged": true,
+    "target_comment": "Consider adding a test that exercises the new refresh-on-success condition. The climate service tests patch `CCM15Device.async_set_state` without setting a return value, so the mock result never equals `CCM15ReturnCode.OK`; as a result, the `async_request_refresh()` branch is no longer covered, and a mistake in this comparison (e.g. `is not`, or the wrong enum member) would go undetected. Setting the mock's return value to `CCM15ReturnCode.OK` and asserting a refresh occurs would restore coverage of this path.",
+    "target_path": "homeassistant/components/ccm15/coordinator.py",
+    "target_comment_id": 3506530713
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175319,
+    "is_merged": true,
+    "target_comment": "Only rename when the old key is present, to avoid resetting user settings.\n\nThis step unconditionally overwrites `additional_settings` with `default_additional_data` whenever `advanced_settings` is absent. A 2.1 entry created via the config flow after the rename in #174066 already stores the user's SSL choices under `additional_settings` (and has no `advanced_settings` key). For such entries `new_data.pop(\"advanced_settings\", default_additional_data)` returns the defaults, so this migration silently resets their `CONF_SSL`/`CONF_VERIFY_SSL` back to defaults (e.g. an airOS 6 user who set `ssl: False` would be reset to `True`). Guarding on the presence of the old key preserves existing settings.",
+    "target_path": "homeassistant/components/airos/__init__.py",
+    "target_comment_id": 3509490226
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175380,
+    "is_merged": true,
+    "target_comment": "Fix the availability threshold check by using the `AttributeState` enum constant instead of a hard-coded integer.",
+    "target_path": "homeassistant/components/homee/entity.py",
+    "target_comment_id": 3514446907
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175430,
+    "is_merged": true,
+    "target_comment": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Use AutoSeat for left auto-seat off**\n\nWith `tesla-fleet-api==1.5.2`, `remote_auto_seat_climate_request` now treats the seat argument as the 1-indexed `AutoSeat` wire value. The Tesla Fleet left auto-seat off callback still passes `Seat.FRONT_LEFT` in `homeassistant/components/tesla_fleet/switch.py:50-52`, which is `0`, so command-signing vehicles send an unknown/invalid auto-seat position and users can turn this switch on but not off. Please switch that callback to `AutoSeat.FRONT_LEFT` as part of this bump.\n\nUseful? React with 👍 / 👎.",
+    "target_path": "homeassistant/components/tesla_fleet/manifest.json",
+    "target_comment_id": 3517477451
+  },
+  {
+    "repo": "home-assistant/core",
+    "number": 175467,
+    "is_merged": false,
+    "target_comment": "The `\"week\"` range branch is not exercised by the new test. The helper-level test this was copied from (`tests/helpers/test_llm.py`) covered both `\"today\"` and `\"week\"`, but `tests/components/calendar/test_llm.py` only calls the tool with `range=\"today\"`, leaving lines 59-61 uncovered. Since this is a brand-new file, these lines will show up as missing patch coverage. Consider adding the `\"week\"` case, ideally by parametrizing the range so both branches are covered without duplicating the test body.",
+    "target_path": "homeassistant/components/calendar/llm.py",
+    "target_comment_id": 3519338564
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 41250,
+    "is_merged": true,
+    "target_comment": "can't wait to see this merged!",
+    "target_path": "src/transformers/models/bart/configuration_bart.py",
+    "target_comment_id": 2605856759
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 44757,
+    "is_merged": true,
+    "target_comment": "isn't it dependent on adding a full static-shape generation loop first?",
+    "target_path": "src/transformers/generation/utils.py",
+    "target_comment_id": 3079509881
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 45396,
+    "is_merged": true,
+    "target_comment": "`rotary_pos_ids` is accepted but not actually used: when it is provided, `pids` is never defined, and `self.rotary_pos_emb(pids)` will raise an UnboundLocalError. Set `pids = rotary_pos_ids` in the else-path (or compute `pids` unconditionally from `rotary_pos_ids`/`grid_thw`).\n",
+    "target_path": "src/transformers/models/paddleocr_vl/modular_paddleocr_vl.py",
+    "target_comment_id": 3073470056
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46590,
+    "is_merged": true,
+    "target_comment": "This moves *every* tensor in `model_inputs` to `self.device` on each decode step. Since `prepare_inputs_for_generation()` is called every iteration (e.g. `_sample`), any large static tensors forwarded via `kwargs` (e.g. multimodal `pixel_values`, precomputed embeddings, etc.) will be copied host->device repeatedly, which is a significant performance regression and can defeat the goal of keeping bookkeeping off-device. Consider only moving the small per-step generation bookkeeping tensors (ids/masks/positions) and leave other tensors on whatever device the caller provided (so users must place large static inputs correctly once).",
+    "target_path": "src/transformers/generation/utils.py",
+    "target_comment_id": 3404646798
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46840,
+    "is_merged": false,
+    "target_comment": "`overload` is not imported in this module, so this decorator will raise `NameError` at import time. Use `typing.overload` here (and for the other overload blocks below) to avoid adding a new import and to keep the file import-safe.",
+    "target_path": "src/transformers/processing_utils.py",
+    "target_comment_id": 3459137237
+  },
+  {
+    "repo": "huggingface/transformers",
+    "number": 46989,
+    "is_merged": false,
+    "target_comment": "i don't think we wanna support quantization as part of the hf exporters api, this is very \"specific\" while the approach here is to be as general as possible",
+    "target_path": "src/transformers/exporters/configs.py",
+    "target_comment_id": 3505585177
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 64537,
+    "is_merged": false,
+    "target_comment": "I think in most other files we have a default `.. currentmodule:: pandas` (explicitly or through `{{ header }}`), so could also do that for consistency",
+    "target_path": "doc/source/user_guide/duplicates.rst",
+    "target_comment_id": 2924660275
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65748,
+    "is_merged": true,
+    "target_comment": "Can you reduce the verbosity here please? \n(The last part is just explaining CoW)",
+    "target_path": "pandas/core/internals/blocks.py",
+    "target_comment_id": 3349917270
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65756,
+    "is_merged": true,
+    "target_comment": "I believe this can just be:\r\n\r\n```python\r\nfrom re import _parser\r\n\r\nregex_parser = _parser.parse\r\ntokens = regex_parser(regex)\r\nif len(tokens) == 0:\r\n    return False\r\nelse:\r\n    return tokens[0][0] == _parser.BRANCH\r\n```",
+    "target_path": "scripts/validate_unwanted_patterns.py",
+    "target_comment_id": 3407859374
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65780,
+    "is_merged": true,
+    "target_comment": "nit: Could we trim this comment (and this one in the test)?",
+    "target_path": "pandas/io/pytables.py",
+    "target_comment_id": 3367813399
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65781,
+    "is_merged": true,
+    "target_comment": "Just to confirm understanding, is this technically working around a bug/limitation in pytables?",
+    "target_path": "pandas/io/pytables.py",
+    "target_comment_id": 3382705273
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65783,
+    "is_merged": true,
+    "target_comment": "Could we trim this description? ",
+    "target_path": "pandas/io/pytables.py",
+    "target_comment_id": 3382827191
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65786,
+    "is_merged": true,
+    "target_comment": "Can we use a `DataFrame` with less rows (like 100)?",
+    "target_path": "pandas/tests/io/pytables/test_file_handling.py",
+    "target_comment_id": 3350462560
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65789,
+    "is_merged": true,
+    "target_comment": "`_or_of_ands_columns` sets `found=True` when an `|` node has *either* side as an `&` subtree. That will also warn for shapes like `(A & B) | C` or `C | (A & B)`, which are outside the documented/intentional predicate “(A & B) | (C & D)”. Tightening this to require both OR operands to be multi-column AND subtrees will reduce false positives and better match the stated behavior.",
+    "target_path": "pandas/io/pytables.py",
+    "target_comment_id": 3408434120
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65791,
+    "is_merged": true,
+    "target_comment": "question: where is this 31 defined? It is something we can reference as a variable in the error message and the test?",
+    "target_path": "pandas/io/pytables.py",
+    "target_comment_id": 3350422891
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65792,
+    "is_merged": true,
+    "target_comment": "I think this is superfluous right? Doesn't `match` have to apply to all warnings caught?",
+    "target_path": "pandas/tests/io/pytables/test_put.py",
+    "target_comment_id": 3350413882
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65793,
+    "is_merged": true,
+    "target_comment": "nit: Can we pare down this description down to 2 lines?",
+    "target_path": "pandas/core/computation/pytables.py",
+    "target_comment_id": 3357705054
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65794,
+    "is_merged": true,
+    "target_comment": "Nit: Can `obj` be constructed in a more direct way than using `iloc[:0]`?",
+    "target_path": "pandas/tests/io/pytables/test_store.py",
+    "target_comment_id": 3350393352
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65811,
+    "is_merged": true,
+    "target_comment": "this check was added for performance reasons.  Can you look at the PR that made it to find the particular relevant use case and make sure this isnt giving back the perf in that case",
+    "target_path": "pandas/io/parquet.py",
+    "target_comment_id": 3424781827
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65846,
+    "is_merged": true,
+    "target_comment": "This test is not really doing much, I think. Mutating the Series should not mutate `result` anyway, if that object is still alive. In my comment on the PR, I overwrote the `result` variable with its Series version (needed the conversion to Series to show the bug, since we cannot mutate an index) ",
+    "target_path": "pandas/tests/copy_view/index/test_index.py",
+    "target_comment_id": 3419356531
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65928,
+    "is_merged": false,
+    "target_comment": "i dont think CoW is the reason for this.  it is the removal of the old `_item_cache`",
+    "target_path": "doc/source/user_guide/migration.rst",
+    "target_comment_id": 3448977544
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65938,
+    "is_merged": true,
+    "target_comment": "Why did this file change? I don't think that 29af056064a5c81e06d450495943d275a597b34c is strictly necessary to fix the failing tests.",
+    "target_path": ".github/workflows/wheels.yml",
+    "target_comment_id": 3454110073
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65943,
+    "is_merged": true,
+    "target_comment": "Is it possible to fix astype_is_view instead?",
+    "target_path": "pandas/core/internals/construction.py",
+    "target_comment_id": 3476044856
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65955,
+    "is_merged": true,
+    "target_comment": "This is true only with the caveat that it sorts with respect to the ordering of the index levels (i.e. `df.index.levels`)\r\n\r\n```python\r\nmi = pd.MultiIndex(\r\n    levels=[[\"b\", \"a\"], [\"y\", \"x\"]],\r\n    codes=[[0, 0, 1, 1], [0, 1, 0, 1]],\r\n    names=[\"L0\", \"L1\"],\r\n)\r\ns = pd.Series(range(4), index=mi)\r\nres = s.unstack(\"L1\").stack()\r\nprint(res)\r\n# L0  L1\r\n# b   y     0\r\n#     x     1\r\n# a   y     2\r\n#     x     3\r\n# dtype: int64\r\ntm.assert_series_equal(res, res.sort_index())\r\n# AssertionError: Series.index level [0] are different\r\n```\r\n\r\nReplacing with `codes=[[1, 1, 0, 0], [0, 1, 0, 1]]` gives the same result (because the codes get sorted).",
+    "target_path": "doc/source/user_guide/reshaping.rst",
+    "target_comment_id": 3485987033
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65956,
+    "is_merged": true,
+    "target_comment": "This makes sense but is incomplete since no caller checks the return value for errors",
+    "target_path": "pandas/_libs/src/vendored/ujson/python/objToJSON.c",
+    "target_comment_id": 3457806791
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 65970,
+    "is_merged": true,
+    "target_comment": "Is it intentional that this is repeated?",
+    "target_path": "pandas/tests/util/test_assert_frame_equal.py",
+    "target_comment_id": 3465854449
+  },
+  {
+    "repo": "pandas-dev/pandas",
+    "number": 66096,
+    "is_merged": false,
+    "target_comment": "it isnt obvious to me that this is the correct API, worth calling attention to",
+    "target_path": "pandas/tests/frame/methods/test_select_dtypes.py",
+    "target_comment_id": 3502007589
+  }
+]
