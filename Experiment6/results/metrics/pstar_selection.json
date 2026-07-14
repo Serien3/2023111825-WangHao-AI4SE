@@ -1,0 +1,55 @@
+{
+  "classify": {
+    "selected": "P1",
+    "by_prompt_avg": {
+      "P1": {
+        "accuracy": 0.76,
+        "f1": 0.8604651162790697,
+        "recall": 1.0
+      },
+      "P2": {
+        "accuracy": 0.74,
+        "f1": 0.8471760797342193,
+        "recall": 0.972972972972973
+      },
+      "P3": {
+        "accuracy": 0.7450000000000001,
+        "f1": 0.8495798319327731,
+        "recall": 0.972972972972973
+      },
+      "P4": {
+        "accuracy": 0.75,
+        "f1": 0.8546409421828073,
+        "recall": 0.9932432432432432
+      }
+    },
+    "criterion": "max mean accuracy (f1 tie-break) over contexts on AI pool"
+  },
+  "generate": {
+    "selected": "P3",
+    "by_prompt_avg": {
+      "P1": {
+        "bleu": 1.0738969470726767,
+        "rougeL": 0.04916541129212285
+      },
+      "P2": {
+        "bleu": 1.0031394588213844,
+        "rougeL": 0.048238922667566415
+      },
+      "P3": {
+        "bleu": 1.1245374763449454,
+        "rougeL": 0.053620677311308124
+      },
+      "P4": {
+        "bleu": 0.7638014926753849,
+        "rougeL": 0.04710199061634371
+      }
+    },
+    "criterion": "max mean BLEU (rougeL tie-break) over contexts on AI pool"
+  },
+  "note": "BLEU/ROUGE 本身失明，但作为'沿用旧口径经验选取'依据自洽；见报告。",
+  "hardcoded_in_config": {
+    "classify": "P1",
+    "generate": "P3"
+  }
+}

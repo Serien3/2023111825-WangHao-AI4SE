@@ -74,9 +74,14 @@ def _write_cache(cache_key: str, payload: dict) -> None:
 # 调用
 # --------------------------------------------------------------------------- #
 def _call_api(messages: list[dict], temperature: float, max_tokens: int,
-              json_mode: bool = False) -> dict:
-    """单次带重试的原始调用，返回 {text, latency, usage, model}。"""
+              json_mode: bool = False, model: str | None = None) -> dict:
+    """单次带重试的原始调用，返回 {text, latency, usage, model}。
+
+    model 为 None 时回退 config.MODEL_ID（保持实验四/五既有行为不变）；
+    实验六裁判调用传 model="deepseek-v4-pro"，与执行调用天然不同 key。
+    """
     client = _get_client()
+    model_id = model or config.MODEL_ID
     last_err: Exception | None = None
     kwargs = {}
     if json_mode:
@@ -85,7 +90,7 @@ def _call_api(messages: list[dict], temperature: float, max_tokens: int,
         t0 = time.perf_counter()
         try:
             resp = client.chat.completions.create(
-                model=config.MODEL_ID,
+                model=model_id,
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -114,15 +119,20 @@ def _call_api(messages: list[dict], temperature: float, max_tokens: int,
 
 
 def chat(messages: list[dict], temperature: float, max_tokens: int,
-         cache_key: str | None = None, json_mode: bool = False) -> dict:
-    """带缓存的调用。cache_key 为 None 时不缓存（用于临时冒烟）。"""
+         cache_key: str | None = None, json_mode: bool = False,
+         model: str | None = None) -> dict:
+    """带缓存的调用。cache_key 为 None 时不缓存（用于临时冒烟）。
+
+    model 穿透到 _call_api（None 回退 config.MODEL_ID）。缓存 key 的内容哈希由
+    上层 chat_semantic 负责纳入 model 维度，这里只透传。
+    """
     if cache_key is not None:
         cached = _read_cache(cache_key)
         if cached is not None:
             cached["cached"] = True
             return cached
 
-    result = _call_api(messages, temperature, max_tokens, json_mode=json_mode)
+    result = _call_api(messages, temperature, max_tokens, json_mode=json_mode, model=model)
     result["cached"] = False
     if cache_key is not None:
         _write_cache(cache_key, result)
@@ -131,16 +141,19 @@ def chat(messages: list[dict], temperature: float, max_tokens: int,
 
 def chat_semantic(task: str, context: str, prompt: str, pr_key: str,
                   messages: list[dict], temperature: float, max_tokens: int,
-                  json_mode: bool = False) -> dict:
+                  json_mode: bool = False, model: str | None = None) -> dict:
     """主循环入口：以 (task,context,prompt,pr_key) + 内容哈希为缓存 key。
 
-    内容哈希纳入 messages/温度/max_tokens/json_mode，
-    保证 prompt 或调用参数变更后不会误命中旧缓存。
+    内容哈希纳入 model/messages/温度/max_tokens/json_mode，
+    保证 prompt、调用参数或模型变更后不会误命中旧缓存。
+    model=None 时 hash 用 config.MODEL_ID —— 与实验四/五既有行为逐字一致（回归）。
     """
-    content_hash = _hash_key(config.MODEL_ID, json.dumps(messages, ensure_ascii=False),
+    model_id = model or config.MODEL_ID
+    content_hash = _hash_key(model_id, json.dumps(messages, ensure_ascii=False),
                              temperature, max_tokens, json_mode)
     cache_key = f"{task}__{context}__{prompt}__{pr_key}__{content_hash[:12]}"
-    return chat(messages, temperature, max_tokens, cache_key=cache_key, json_mode=json_mode)
+    return chat(messages, temperature, max_tokens, cache_key=cache_key,
+                json_mode=json_mode, model=model)
 
 
 def _smoke() -> None:
