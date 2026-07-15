@@ -2,6 +2,19 @@
 
 \input{listing_style.tex}
 
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{makecell}
+
+\graphicspath{{../results/figures/}}
+\captionsetup{font=small,labelfont=bf,labelsep=quad}
+\setlist{nosep,leftmargin=2.2em}
+\setlength{\emergencystretch}{2em}
+
 %========================
 % 基本信息
 %========================
@@ -9,7 +22,7 @@
 \setcoursename{基础软件开发技术实践}
 \setreportname{智能软件工程实验报告}
 
-\setexperimenttitle{\hintholder{请输入实验标题}}
+\setexperimenttitle{实验五：针对大模型生成代码的代码审查}
 
 \setstudentname{\hintholder{请输入姓名}}
 \setdepartment{\hintholder{请输入院系}}
@@ -19,7 +32,7 @@
 \setinstructor{刘佳琨}
 
 \setlablocation{\hintholder{请输入实验地点}}
-\setlabtime{    \hintholder{请输入实验时间}}
+\setlabtime{\hintholder{请输入实验时间}}
 
 \begin{document}
 
@@ -30,12 +43,21 @@
 \makereporthead
 
 %========================
-% 实验目的
+% 实验目的（逐字复制实验指导书 5.2）
 %========================
 
 \experimentpurpose{
 
-\placeholder{5cm}{请填写实验目的}
+完成本实验后，学生应能够：
+
+\begin{enumerate}[label=\arabic*.]
+  \item 理解 AI 生成代码与人类编写代码之间的差异。
+  \item 掌握 AI 生成代码数据集的构建与筛选方法。
+  \item 能够利用实验二、实验三和实验四构建的代码审查模型分析 AI 生成代码。
+  \item 掌握不同代码审查模型在 AI 生成代码上的性能评估方法。
+  \item 理解 AI 生成代码给代码审查带来的新挑战。
+  \item 能够分析不同模型在 AI 生成代码场景下的优缺点。
+\end{enumerate}
 
 }
 
@@ -45,7 +67,94 @@
 
 \experimentcontent{
 
-\placeholder{5cm}{请填写实验内容}
+\subsection{研究设计与总体框架}
+
+本实验考察代码审查模型从人类代码迁移到 AI 生成代码后的性能变化。研究包含两个任务：Merge Prediction 根据 Pull Request（PR）预测其最终合并状态；Review Comment Generation 根据代码改动生成一条具体、可操作的行内审查意见。两项任务共享实验一构建的五仓库数据集，并分别复用实验二的传统机器学习模型和实验四的大语言模型（LLM）流水线。
+
+评估采用固定模型迁移协议。传统机器学习分支加载实验二保存的特征定义、标准化器和模型权重；LLM 分支沿用实验四的上下文组织、Prompt、推理参数与输出解析。AI PR 用作测试集，人类代码与 AI 代码的性能差由统一推理协议给出。
+
+实验流程依次完成 AI PR 筛选、任务样本构造、模型推理和结果分析。人类代码 held-out test 提供原始性能锚点，按仓库和合并标签分层抽取的人类样本提供受控对照。结果分析覆盖主性能、上下文敏感度、审查过程特征消融和错误案例四条证据链。
+
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{
+\centering
+实验一共享数据集
+$\longrightarrow$ AI PR 筛选与分层抽样
+$\longrightarrow$
+\begin{tabular}{c}
+实验二固定 ML 模型\\
+实验四固定 LLM 流水线
+\end{tabular}
+$\longrightarrow$
+\begin{tabular}{c}
+Merge Prediction\\
+Review Comment Generation
+\end{tabular}
+$\longrightarrow$ 人类--AI 对比、消融与错误归因
+}}
+\end{center}
+
+\subsection{数据与评估队列}
+
+实验一根据 bot 作者、commit 或 PR 正文中的 \texttt{Co-authored-by} 模式、AI 工具文本提示和相关标签生成 \texttt{is\_ai\_code} 标记，并保留每条标记的触发信号。五仓库数据集中共有 294 个 AI 标记 PR。本实验按任务输入和真值要求构造三个评估队列：
+
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{AI 合并预测池：}保留 \texttt{is\_ai\_code=True} 且至少含一个具有 patch 的 Python 文件的 PR，共 253 条，其中 187 条已合并、66 条未合并。
+  \item \textbf{AI 审查意见生成池：}保留至少含一条顶层行内审查意见的 AI PR，共 72 条。每个 PR 取时间最早的非回复行内意见作为唯一参考文本，与实验四保持相同真值口径。
+  \item \textbf{匹配人类对照组：}从实验二 held-out test 集按 \texttt{repo}$\times$\texttt{is\_merged} 分层抽取 50 条。分层容量不足时，剩余名额按 AI 分布重新分配。最终对照组正类率为 66\%，AI 分类样本正类率为 74\%。
+\end{enumerate}
+
+LLM 合并预测从 253 条 AI PR 中按仓库和合并标签分层抽取 50 条，审查意见生成使用全部 72 条 AI PR。生成任务沿用实验四的 50 条人类测试样本作为对照。所有抽样使用随机种子 42，样本键随实验结果一并落盘。
+
+\subsection{传统机器学习评估}
+
+传统机器学习分支评估 SVM、Random Forest（RF）、XGBoost 和 LightGBM。每个 PR 由 AST/CFG 结构特征、代码统计特征、文本统计特征以及 PR 标题与正文的 TF--IDF 表示组成。实验二保存了 50 个 \texttt{tfidf\_*} 特征列，本实验据此恢复固定词表和 IDF，并对 AI 与人类对照文本执行 \texttt{transform}。重建特征与实验二原矩阵的最大绝对差为 $2\times10^{-16}$。
+
+特征列按实验二保存的顺序排列，并由原标准化器完成变换。pre-review 特征描述审查开始前的 PR，构成主评估设置；full 特征加入评论数、审查轮次等过程变量，用于分析后验信息对结果的影响。四个模型分别在 253 条 AI PR 和 50 条匹配人类 PR 上运行，结果与实验二 208 条人类 held-out test 的指标对齐。
+
+\subsection{大语言模型评估}
+
+LLM 分支使用 \texttt{deepseek-v4-flash}，并在 16 个上下文--Prompt 条件下执行两个任务。C1 输入 Diff；C2 加入 PR 标题与描述；C3 加入 Commit Message；C4 同时加入 PR 描述和 Commit Message。P1--P4 分别对应 Zero-shot、Few-shot、Chain-of-Thought（CoT）和 Role-based Prompt。Few-shot 示例来自实验四的人类训练集。
+
+分类输出采用包含 \texttt{reasoning} 和 \texttt{decision} 的 JSON，决策标签为 \texttt{MERGE} 或 \texttt{REJECT}；生成输出采用包含 \texttt{comment} 的 JSON。分类温度设为 0，生成温度设为 0.3。语义缓存以任务、上下文、Prompt、PR 键和内容哈希联合索引。分类任务记录 1600 次推理，生成任务记录 1952 次推理。
+
+\begin{table}[H]
+\centering
+\caption{LLM 实验矩阵。每个上下文与每种 Prompt 交叉组合，分别执行合并预测和审查意见生成。}
+\small
+\begin{tabular}{lll}
+\toprule
+维度 & 编号 & 实际输入或策略 \\
+\midrule
+上下文 & C1 & Diff \\
+上下文 & C2 & Diff + PR 标题与描述 \\
+上下文 & C3 & Diff + Commit Message \\
+上下文 & C4 & Diff + PR 标题与描述 + Commit Message \\
+\midrule
+Prompt & P1 & Zero-shot \\
+Prompt & P2 & Few-shot \\
+Prompt & P3 & Chain-of-Thought \\
+Prompt & P4 & Role-based \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{评价指标与分析设计}
+
+Merge Prediction 以“已合并”为正类，报告 Accuracy、Precision、Recall 和 F1，并在 Precision--Recall 平面上与恒预测正类基线比较。正类率为 $p$ 时，该基线的 Precision、Recall 和 F1 分别为 $p$、1 和 $2p/(1+p)$。AI 分类池的 $p=0.739$，对应基线 F1 为 0.850。
+
+Review Comment Generation 报告 corpus BLEU、ROUGE-1、ROUGE-2 和 ROUGE-L。BLEU 使用 0--100 量纲，ROUGE 使用 0--1 量纲。这些指标分别度量生成意见与参考意见的 $n$-gram 和最长公共子序列重合。
+
+分析围绕三组比较展开。首先计算 AI 相对人类 held-out test 和匹配对照的逐模型性能差。随后对每个上下文在四种 Prompt 上求均值，并以
+\[
+G_m=\frac{1}{4}\sum_{p=1}^{4}m(C4,P_p)-
+    \frac{1}{4}\sum_{p=1}^{4}m(C1,P_p)
+\]
+度量从 C1 到 C4 的上下文增益。最后从 LLM 分类错误中抽取五个不同 PR，结合 diff 检查错误方向与代码特征。过程特征消融、上下文增益和错误案例共同解释主性能变化。
+
+\subsection{实现与复现}
+
+实验使用 Python~3.12 和 \texttt{uv} 管理环境。\texttt{data.py} 与 \texttt{sampling.py} 构造评估队列，\texttt{ml\_features.py} 与 \texttt{ml\_predict.py} 完成传统机器学习推理，\texttt{run\_llm.py} 编排 LLM 条件，\texttt{evaluate.py} 与 \texttt{analysis.py} 汇总指标和案例，\texttt{nature\_viz.py} 导出 SVG、PDF 和 600~dpi PNG 图。固定随机种子、落盘样本和语义缓存保证各阶段输入一致。
 
 }
 
@@ -55,7 +164,150 @@
 
 \experimentresult{
 
-\placeholder{5cm}{请填写实验结果}
+\subsection{AI 生成代码数据集统计}
+
+实验一的 294 个 AI 标记 PR 形成了两个任务队列。合并预测队列包含 253 条 PR，其中 187 条已合并、66 条未合并，正类率为 73.9\%；仓库分布为 pandas 135 条、Home Assistant 52 条、Airflow 47 条和 Transformers 19 条。审查意见生成队列包含 72 条带行内评论真值的 PR，覆盖五个仓库。LLM 分类使用 50 条分层 AI 样本和 50 条人类对照，标签比例分别为 37:13 和 33:17（表~\ref{tab:data-summary}）。
+
+\begin{table}[H]
+\centering
+\caption{实验五数据集统计。AI 分类池用于传统机器学习全量评估；LLM 分类使用其中的固定分层子样本。}
+\label{tab:data-summary}
+\small
+\begin{tabular}{lrrrrl}
+\toprule
+集合 & 总数 & 已合并 & 未合并 & 合并率 & 用途 \\
+\midrule
+AI 合并预测池 & 253 & 187 & 66 & 73.9\% & ML 全量测试 \\
+AI 分类分层样本 & 50 & 37 & 13 & 74.0\% & LLM 合并预测 \\
+匹配人类分类对照 & 50 & 33 & 17 & 66.0\% & ML/LLM 受控对比 \\
+AI 审查意见生成池 & 72 & 52 & 20 & 72.2\% & LLM 意见生成 \\
+人类生成锚点 & 50 & 44 & 6 & 88.0\% & 复用实验四结果 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{传统机器学习的合并预测结果}
+
+pre-review 结果显示三个树模型在 AI 代码上出现一致的性能下降。RF 的 F1 从人类 test 的 0.813 降至 0.585，XGBoost 从 0.798 降至 0.594，LightGBM 从 0.804 降至 0.630；相对匹配人类对照的差值分别为 $-0.277$、$-0.218$ 和 $-0.137$。三个模型的 AI Recall 为 0.460--0.519，大量已合并 PR 被预测为未合并（表~\ref{tab:ml-pre}）。
+
+\begin{table}[H]
+\centering
+\caption{pre-review 特征下的 Merge Prediction 结果。人类 test 和匹配对照列报告 F1；AI 列同时报告 Accuracy、Precision、Recall 与 F1。}
+\label{tab:ml-pre}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+模型 & 人类 F1 & 对照 F1 & AI Accuracy & AI Precision & AI Recall & AI F1 \\
+\midrule
+SVM      & 0.810 & 0.800 & 0.723 & 0.751 & 0.936 & 0.833 \\
+RF       & 0.813 & 0.862 & 0.518 & 0.804 & 0.460 & 0.585 \\
+XGBoost  & 0.798 & 0.812 & 0.530 & 0.821 & 0.465 & 0.594 \\
+LightGBM & 0.804 & 0.767 & 0.549 & 0.802 & 0.519 & 0.630 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SVM 呈现不同的预测模式：AI F1 为 0.833，比人类 test 高 0.023，Recall 为 0.936，Precision 为 0.751。AI 队列正类率为 73.9\%，恒预测“合并”的理论 F1 为 0.850；SVM 的 Precision--Recall 位置接近这一基线，表明其高 F1 主要由合并偏向驱动。full 特征下，四个模型的 AI F1 集中在 0.665--0.694，均低于人类 test 的 0.857--0.870（图~\ref{fig:ml-performance}）。传统模型在人类代码上学习的特征--标签关系在 AI 代码上发生了明显变化。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig1_ml_performance.pdf}
+\caption{传统机器学习模型在人类代码、AI 代码与匹配人类对照上的合并预测 F1。\textbf{a}，pre-review 特征；\textbf{b}，包含审查过程变量的 full 特征。蓝、红、绿分别表示实验二人类 held-out test、AI 代码和匹配人类对照。RF、XGBoost 和 LightGBM 在 AI 侧的 pre-review F1 下降，full 设置下四个模型的 AI F1 均低于两个人类锚点。图中为单次固定划分的点估计，不含误差条。}
+\label{fig:ml-performance}
+\end{figure}
+
+\subsection{LLM 合并预测：高 F1 与类别偏向}
+
+16 个上下文--Prompt 条件呈现稳定的高 Recall 模式。AI Accuracy 为 0.72--0.76，F1 为 0.837--0.860，平均 F1 为 0.853；人类侧平均 F1 为 0.799。AI Precision 为 0.735--0.766，Recall 为 0.973--1.000，平均 Recall 达到 0.985。模型几乎总是预测“合并”，高 F1 与 AI 队列的正类占比共同形成。所有条件的 JSON 解析错误率均为 0，输出解析未改变这一分布。
+
+图~\ref{fig:llm-landscape}a、b 将这一现象展开到全部 16 个条件：F1 保持在 0.84--0.86，Recall 同步接近 1。图~\ref{fig:llm-landscape}c 的 ROUGE-L 变化范围同样较窄。Precision、Recall 与多数类基线共同给出了比单一 F1 更完整的模型行为描述。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig2_ai_heatmap.pdf}
+\caption{AI 代码上的 LLM 16 条件结果。行对应 C1 Diff、C2 Diff+PR 描述、C3 Diff+Commit 和 C4 全部上下文，列对应 Zero-shot、Few-shot、CoT 和 Role-based Prompt。\textbf{a}，Merge Prediction F1；\textbf{b}，Merge Prediction Recall；\textbf{c}，Review Comment Generation ROUGE-L。分类 F1 为 0.84--0.86，但 Recall 接近 1，揭示了偏向预测“合并”的现象；生成 ROUGE-L 整体较低且条件差异有限。}
+\label{fig:llm-landscape}
+\end{figure}
+
+\subsection{匹配对照与类别不平衡诊断}
+
+按仓库和合并标签分层后，三个树模型的性能差仍然存在。AI 侧 RF、XGBoost 和 LightGBM 的 F1 分别比 held-out 人类对照低 0.277、0.218 和 0.137，SVM 高 0.033（图~\ref{fig:control-ablation}a）。对照样本来自实验二 test 集，F1 差值建立在独立的人类样本上。
+
+Precision--Recall 平面进一步区分了两类迁移行为（图~\ref{fig:control-ablation}b）。SVM 与 16 个 LLM 条件靠近恒预测“合并”的理论位置 $(0.739,1.000)$，表现为召回饱和；三个树模型位于 Precision 约 0.80、Recall 约 0.46--0.52 的区域，表现为召回下降。两类模型沿相反方向偏离了均衡判别状态。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig4_control_ablation.pdf}
+\caption{分布感知对照与类别偏向诊断。\textbf{a}，pre-review 设置下 AI 代码与 held-out 分层人类对照的 F1 哑铃图；负值表示 AI 侧低于对照。\textbf{b}，AI 侧 Precision--Recall 平面；黑色星号是按 AI 正类率计算的恒预测“合并”基线，红色点/三角为传统机器学习模型，紫色空心方块为 16 个 LLM 条件。树模型的 Recall 较低，而 SVM/LLM 靠近多数类基线。}
+\label{fig:control-ablation}
+\end{figure}
+
+\subsection{审查过程特征消融}
+
+full 特征揭示了审查过程信息对不同模型的作用。人类 test 的四个模型获得约 0.05--0.07 的 F1 增益；AI 侧 RF、XGBoost 和 LightGBM 分别增加 0.109、0.071 和 0.043，SVM 下降 0.156（图~\ref{fig:leakage-gain}）。加入过程变量后，AI 侧四个模型的 F1 为 0.665--0.694，与人类 test 仍相差 0.176--0.203。
+
+审查过程变量记录 PR 提交后的交互，其增益刻画后验信息的诊断价值。三个树模型从这些信号中获得部分恢复；SVM 的大幅反向变化进一步显示其 pre-review 结果对输入分布和决策边界较为敏感。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{fig5_leakage_gain.pdf}
+\caption{加入审查过程特征前后的 F1 变化。纵轴为 $\Delta\mathrm{F1}=\mathrm{F1}_{full}-\mathrm{F1}_{pre}$；蓝、红、绿分别表示人类 test、AI 代码和匹配人类对照。AI 侧三个树模型获得正增益，SVM 明显下降。full 特征用于诊断后验过程信息的作用。}
+\label{fig:leakage-gain}
+\end{figure}
+
+\subsection{审查意见生成结果与样例}
+
+16 个生成条件均处于低词面重合区间：BLEU 为 0.560--1.463（0--100 量纲），ROUGE-1 为 0.0466--0.0648，ROUGE-2 为 0.0104--0.0240，ROUGE-L 为 0.0429--0.0589。AI 侧平均 BLEU 和 ROUGE-L 分别为 0.991 和 0.0495，人类侧分别为 0.965 和 0.0426。两组均值接近，全部结果集中在低重合区间，单一参考文本对审查意见表达空间的覆盖有限。
+
+Airflow PR~\#63368 展示了词面指标与内容质量之间的间隙。人工意见关注 \texttt{detail} 缺失以及 \texttt{None} 与空容器的区分；C2--P3 生成意见建议将真值判断改为显式的 \texttt{is not None} 判断，确保空列表或空字典仍能正确显示。模型定位了相同边界条件并给出具体修改，表达形式与参考意见存在差异。该样例说明生成评价还需要覆盖问题定位、事实正确性和建议可执行性。
+
+\subsection{上下文敏感度分析}
+
+上下文对两个任务产生了不同影响。AI 分类 F1 从 C1 的 0.8488 变为 C4 的 0.8480，变化为 $-0.00088$；人类侧变化为 $+0.00901$（图~\ref{fig:context-sensitivity}a）。AI 生成 ROUGE-L 从 0.0459 增至 0.0506，增益为 $+0.00474$；人类侧从 0.0469 降至 0.0417，变化为 $-0.00518$（图~\ref{fig:context-sensitivity}b）。新增 PR 描述和 Commit 信息对分类几乎没有影响，对 AI 审查意见生成带来小幅增益。
+
+C2 或 C3 在部分条件下优于 C4，上下文收益并未随输入长度单调增长。实验六可进一步比较信息选择、结构化组织和任务相关性，定位真正有效的上下文成分。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig3_context_sensitivity.pdf}
+\caption{从 C1 到 C4 的上下文敏感度。每个点为同一上下文下四种 Prompt 的指标均值。\textbf{a}，Merge Prediction F1；AI 的 C4--C1 变化约为 $-0.001$，人类约为 $+0.009$。\textbf{b}，Review Comment Generation ROUGE-L；AI 的变化约为 $+0.005$，人类约为 $-0.005$。生成对照与人类锚点复用同一批样本，故两条曲线重合。图中为描述性点估计。}
+\label{fig:context-sensitivity}
+\end{figure}
+
+\subsection{错误案例归因与 AI 代码审查挑战}
+
+C1--P1 的五个典型误判均为假阳性：PR 实际未合并，模型预测合并（图~\ref{fig:error-cases}）。这些 pandas diff 包含明确的 issue 编号、解释性注释、边界条件处理或新增测试。pandas~\#65951 增加了前导零与大数转换测试，pandas~\#66061 在解析阶段增加类型检查并解释错误来源。局部 diff 呈现出目标明确、注释充分和测试完整的表面特征，模型据此作出偏乐观判断。
+
+错误方向揭示了局部代码质量与最终合并状态之间的信息缺口。issue 关系、PR 讨论、仓库状态和维护流程共同影响合并结果，单个 diff 缺少这些信号。后续分析可将技术质量与最终合并状态拆分标注，并补充项目级上下文。
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{fig6_error_cases.pdf}
+\caption{五个典型 diff-only 分类错误。\textbf{a}，五例均为假阳性，即模型预测合并但实际未合并；\textbf{b}，对应的 pandas PR 编号、预测、真实标签和上下文。图中包含按程序抽取的五个代表性案例；归因依据为 diff 的表面特征，未合并的流程原因仍需结合 PR 时间线人工核验。}
+\label{fig:error-cases}
+\end{figure}
+
+\subsection{综合结论与实验思考}
+
+\paragraph{1. AI 生成代码与人类编写代码有哪些本质区别？}
+本实验观察到两类直接影响代码审查的差异。AI PR 在仓库组成和合并率上形成了独立分布；典型 diff 还表现出较高的表面规范性，常见明确注释、issue 引用和配套测试。模型在人类代码上建立的局部特征规律由此发生偏移，代码外观与最终合并状态之间的联系也随之减弱。
+
+\paragraph{2. 为什么已有模型在 AI 生成代码上的性能可能下降？}
+主结果与匹配对照共同指向训练--测试分布偏移。错误案例显示，规范的注释、测试和边界处理会增强局部 diff 的可合并外观，而最终合并还取决于 issue 关系、维护决策和仓库状态。模型输入缺少这些项目级信号，局部特征对合并标签的解释力随之下降。
+
+\paragraph{3. 哪类模型对 AI 生成代码具有更好的泛化能力？为什么？}
+树模型在合并预测上的泛化最弱，其 F1 和 Recall 均出现直接下降。SVM 与 LLM 保持了较高 F1，但二者靠近多数类基线，主要表现为持续预测“合并”。LLM 的相对优势体现在输入适配：无需更新权重即可处理四种上下文，并在审查意见生成中获得小幅上下文增益；分类结果仍由合并偏向主导。
+
+\paragraph{4. AI 生成代码是否需要新的评价指标？为什么？}
+需要扩展评价指标体系。分类任务应加入未合并类 Recall、balanced accuracy、MCC、PR-AUC 和校准误差，以识别高合并率下的决策偏向。生成任务应评价问题定位正确性、事实一致性、建议可执行性、严重程度和覆盖率，并用具体案例连接自动指标与实际审查价值。
+
+\paragraph{5. 本实验发现了哪些 AI 生成代码特有的代码审查挑战？}
+本实验识别出五类挑战：高合并率放大多数类预测的 F1；表面完整的代码容易形成假阳性；局部 diff 缺少项目级约束；最终合并标签混合技术质量与维护流程；单一参考文本难以覆盖开放式审查意见。对应的改进方向包括上下文选择、标签重构、类别平衡和多维生成评价。
+
+\paragraph{最终结论。}
+固定模型迁移揭示了 AI 代码审查中的两种核心偏差：树模型丢失召回能力，SVM 与 LLM 倾向预测“合并”。审查意见生成的 BLEU/ROUGE 整体较低，C4 相对 C1 的 ROUGE-L 增益约为 0.005。实验六可据此引入仓库、issue 和调用关系上下文，校正合并预测的类别偏向，并建立面向正确性与可操作性的生成评价。
+
+本实验的解释范围由数据与协议共同限定：AI 标签采用启发式规则，样本集中于少数 Python 仓库，匹配对照的标签比例仍有差异，评估使用单一固定划分，实验三深度学习模型尚未实现，错误案例也缺少完整 PR 时间线标注。结论适用于当前数据集和模型配置，跨工具、跨语言和跨仓库的推广需要独立验证。
 
 }
 
@@ -65,7 +317,17 @@
 
 \experimentproblems{
 
-\placeholder{5cm}{请总结实验中遇到的问题及解决方法}
+\subsection*{4.1 AI 代码样本的筛选}
+
+实验一中的 \texttt{is\_ai\_code} 标记来自作者、提交信息和文本提示等启发式信号，不能完全等同于人工确认的 AI 生成代码。为减少不确定性，本实验保留标记的触发依据，并按照两个任务的输入要求进一步筛选样本：合并预测要求包含有效的 Python patch，审查意见生成要求存在可用的行内评论。这样能够保证输入和真值满足评估要求，同时在结论中明确 AI 标签仍可能存在误差。
+
+\subsection*{4.2 模型输入与特征的一致性}
+
+已有模型直接迁移到 AI PR 时，必须与原实验保持相同的特征顺序、标准化方式、上下文组织和 Prompt 设置，否则性能差异可能来自实现变化。对此，传统机器学习分支复用了实验二保存的特征定义、标准化器和模型权重，LLM 分支沿用了实验四的推理参数与输出格式，并使用固定随机种子和缓存记录样本及结果，从而保证人类代码与 AI 代码之间的比较具有一致口径。
+
+\subsection*{4.3 类别不平衡与生成指标解释}
+
+AI 合并预测样本中已合并 PR 占比较高，只报告 F1 容易高估持续预测“合并”的模型。实验中因此同时检查 Precision、Recall 和多数类基线，以区分真正的判别能力与类别偏向。审查意见生成也存在类似问题：一条代码改动可能对应多种合理意见，BLEU 和 ROUGE 的低词面重合不能直接说明意见无效。因此，结果分析同时结合具体生成样例，避免仅依赖单一自动指标得出结论。
 
 }
 
@@ -75,7 +337,17 @@
 
 \experimentexperience{
 
-\placeholder{5cm}{请分享实验体会和收获}
+\subsection*{5.1 对模型泛化能力的认识}
+
+本实验说明，在人类代码上表现较好的模型不一定能够直接适用于 AI 生成代码。三个树模型在 AI 数据上的召回率明显下降，而 SVM 和 LLM 虽保持较高 F1，却表现出偏向预测“合并”的现象。这使我认识到，评价模型泛化能力不能只比较一个总体分数，还应结合数据分布、错误方向和简单基线进行判断。
+
+\subsection*{5.2 对代码审查上下文的认识}
+
+仅凭局部 diff 很难完整判断 PR 是否应当合并，因为最终结果还会受到 issue 关系、项目规范和维护流程等因素影响。实验中的错误案例表明，注释完整、测试充分的改动仍可能未被合并。由此可见，AI 代码审查不仅需要理解代码本身，还需要选择与任务相关的软件工程上下文；上下文也并非越多越好，而应关注信息是否真正有助于当前判断。
+
+\subsection*{5.3 对后续实验的启发}
+
+通过本实验，我进一步理解了实验一至实验四所构建数据和模型之间的衔接关系，也明确了实验六的改进方向。后续可以补充仓库级、issue 级和调用关系上下文，并采用更关注类别平衡、事实正确性和建议可操作性的评价方法。整体而言，本实验不仅比较了已有模型在新数据上的表现，也揭示了 AI 生成代码给数据标注、模型迁移和结果评价带来的实际挑战。
 
 }
 

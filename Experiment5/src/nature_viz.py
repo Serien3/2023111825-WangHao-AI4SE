@@ -10,22 +10,23 @@ Experiment 6.
 
 Evidence chain (one link per figure)
 ------------------------------------
-fig1  ML merge prediction: tree-model F1 collapses on AI vs BOTH the human
+fig1  ML merge prediction: tree-model F1 declines on AI vs BOTH the human
       held-out test AND the leakage-free matched control -> a real
       generalization drop, not a distribution artifact.
 fig2  LLM 16-condition landscape (4 context x 4 prompt): classification F1
       stays high while recall saturates to ~1.0 -> sets up the artifact.
-fig3  Context sensitivity C1->C4: gain ~ 0 for classification, +0.047 for
+fig3  Context sensitivity C1->C4: gain ~ 0 for classification, +0.005 for
       generation -> "AI needs more context" holds only weakly, only for
       generation.
-fig4  Matched-control ablation + precision-recall plane: (a) AI vs matched
-      control per model proves the drop is not a distribution artifact;
+fig4  Stratified-control ablation + precision-recall plane: (a) AI vs a
+      leakage-free, distribution-aware control shows that tree-model drops
+      persist after partial control of repository and label composition;
       (b) the P-R plane exposes the majority-predictor artifact shared by SVM
       and every LLM condition.
 fig5  Process-feature gain Delta(full - pre): review-phase features help
       humans but help AI less / inconsistently.
-fig6  Error-case attribution: all mis-classifications are false positives on
-      high-surface-quality AI PRs.
+fig6  Error-case attribution: all five selected misclassifications are false
+      positives on high-surface-quality AI PRs.
 
 Backend: Python / matplotlib only. Outputs SVG (editable text) + PDF + PNG@600
 into results/figures/ under the SAME base names the report indexes (fig1..6).
@@ -56,7 +57,7 @@ FIGDIR.mkdir(parents=True, exist_ok=True)
 MODELS = ["svm", "rf", "xgboost", "lightgbm"]
 MODEL_LABELS = ["SVM", "RF", "XGBoost", "LightGBM"]
 CONTEXTS = ["C1", "C2", "C3", "C4"]
-CONTEXT_LABELS = ["C1\ndiff only", "C2\n+file", "C3\n+PR", "C4\n+repo"]
+CONTEXT_LABELS = ["C1\ndiff only", "C2\n+PR desc.", "C3\n+commit", "C4\n+all"]
 PROMPTS = ["P1", "P2", "P3", "P4"]
 PROMPT_LABELS = ["P1\nzero", "P2\nfew", "P3\nCoT", "P4\nrole"]
 
@@ -166,7 +167,7 @@ def fig1_ml_generalization(hv: dict) -> None:
             color=C_AI, fontsize=7, fontweight="bold", va="center", ha="right")
     axes[1].legend(loc="lower right", ncol=1, handlelength=1.1,
                    borderpad=0.3, labelspacing=0.3)
-    fig.suptitle("Human-trained models lose merge-prediction power on AI code",
+    fig.suptitle("Most human-trained models lose merge-prediction power on AI code",
                  fontsize=9.5, fontweight="bold", y=1.02)
     fig.tight_layout()
     _save(fig, "fig1_ml_performance")
@@ -310,7 +311,7 @@ def fig4_ablation_artifact(hv: dict, clf: dict) -> None:
     ax.set_xlim(0.45, 0.95)
     ax.set_xlabel("Merge-prediction F1 (pre features)")
     ax.grid(axis="x", color=C_GRID, lw=0.6)
-    ax.set_title("Same distribution, no leakage:\nAI still below matched control",
+    ax.set_title("Leakage-free stratified control:\nAI trails on all tree models",
                  fontsize=8, pad=6)
     ax.legend(handles=[Line2D([0], [0], marker="o", color="w", markerfacecolor=C_AI,
                               markersize=7, label="AI code"),
@@ -370,8 +371,8 @@ def fig4_ablation_artifact(hv: dict, clf: dict) -> None:
     ], loc="lower left", handletextpad=0.2, labelspacing=0.3)
     _panel_tag(ax, "b", x=-0.20)
 
-    fig.suptitle("The drop is real (a); the high F1 is a class-imbalance "
-                 "artifact (b)", fontsize=9.5, fontweight="bold", y=1.01)
+    fig.suptitle("Tree-model drops persist (a); high F1 can reflect class "
+                 "imbalance (b)", fontsize=9.5, fontweight="bold", y=1.01)
     fig.tight_layout()
     _save(fig, "fig4_control_ablation")
 
@@ -400,7 +401,7 @@ def fig5_leakage_gain(hv: dict) -> None:
     ax.legend(loc="upper left", ncol=1, handlelength=1.1)
     ax.text(0.98, 0.03, "adding review-phase features", transform=ax.transAxes,
             ha="right", va="bottom", fontsize=6.6, color=C_MUTE)
-    fig.suptitle("Review-phase features recover AI tree models most; SVM is the "
+    fig.suptitle("Post-review features raise AI tree-model F1; SVM is the "
                  "exception", fontsize=8.6, fontweight="bold", y=1.0)
     fig.tight_layout()
     _save(fig, "fig5_leakage_gain")
@@ -435,7 +436,7 @@ def fig6_error_cases(cases: dict) -> None:
     ax.set_ylabel(f"Mis-classified AI PRs (n = {n})")
     ax.set_ylim(0, max(vals) + 1)
     ax.grid(axis="y", color=C_GRID, lw=0.6, zorder=1)
-    ax.set_title("Every error is over-optimism", fontsize=8, pad=6)
+    ax.set_title("All five selected errors are over-optimistic", fontsize=8, pad=6)
     _panel_tag(ax, "a", x=-0.26)
 
     # ---- panel b: the concrete cases (only structured fields) ------------- #
@@ -470,8 +471,8 @@ def fig6_error_cases(cases: dict) -> None:
                 ha="center", color=C_MUTE)
     _panel_tag(ax, "b", x=-0.02, y=1.02)
 
-    fig.suptitle("Surface-complete AI PRs fool the quality-centric classifier "
-                 "(all 5 false positives, diff-only)",
+    fig.suptitle("Five selected diff-only errors are false positives on "
+                 "surface-complete AI PRs",
                  fontsize=9.0, fontweight="bold", y=1.04)
     fig.tight_layout()
     _save(fig, "fig6_error_cases")
