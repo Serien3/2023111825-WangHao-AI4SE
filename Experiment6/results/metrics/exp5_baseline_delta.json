@@ -1,0 +1,179 @@
+{
+  "classify": {
+    "L0_P1_ai": {
+      "exp6": {
+        "accuracy": 0.76,
+        "merge_f1": 0.8604651162790697,
+        "balanced_accuracy": 0.5384615384615384,
+        "non_merge_recall": 0.07692307692307693
+      },
+      "exp5_baseline_cell": "C1_P1",
+      "delta": {
+        "accuracy": 0.0,
+        "merge_f1": 0.0
+      }
+    },
+    "L1_P1_ai": {
+      "exp6": {
+        "accuracy": 0.74,
+        "merge_f1": 0.8505747126436781,
+        "balanced_accuracy": 0.5,
+        "non_merge_recall": 0.0
+      },
+      "exp5_baseline_cell": "C4_P1",
+      "delta": {
+        "accuracy": -0.020000000000000018,
+        "merge_f1": -0.00989040363539162
+      }
+    },
+    "L2_P1_ai": {
+      "exp6": {
+        "accuracy": 0.7959183673469388,
+        "merge_f1": 0.8809523809523809,
+        "balanced_accuracy": 0.5833333333333334,
+        "non_merge_recall": 0.16666666666666666
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L3_P1_ai": {
+      "exp6": {
+        "accuracy": 0.78,
+        "merge_f1": 0.8705882352941177,
+        "balanced_accuracy": 0.5769230769230769,
+        "non_merge_recall": 0.15384615384615385
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P1_ai": {
+      "exp6": {
+        "accuracy": 0.78,
+        "merge_f1": 0.8705882352941177,
+        "balanced_accuracy": 0.5769230769230769,
+        "non_merge_recall": 0.15384615384615385
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P5_ai": {
+      "exp6": {
+        "accuracy": 0.6,
+        "merge_f1": 0.6875,
+        "balanced_accuracy": 0.6049896049896051,
+        "non_merge_recall": 0.6153846153846154
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P6_ai": {
+      "exp6": {
+        "accuracy": 0.5833333333333334,
+        "merge_f1": 0.6666666666666666,
+        "balanced_accuracy": 0.5934065934065934,
+        "non_merge_recall": 0.6153846153846154
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L0_P5_ai": {
+      "exp6": {
+        "accuracy": 0.46,
+        "merge_f1": 0.5714285714285714,
+        "balanced_accuracy": 0.4355509355509356,
+        "non_merge_recall": 0.38461538461538464
+      },
+      "exp5_baseline_cell": "C1_P5",
+      "delta": null
+    }
+  },
+  "generate": {
+    "L0_P3_ai": {
+      "exp6": {
+        "bleu": 0.9965607093351685,
+        "rougeL": 0.05677868277847617,
+        "judge_relevance": 1.5277777777777777,
+        "judge_hallucination": 1.2083333333333333
+      },
+      "exp5_baseline_cell": "C1_P3",
+      "delta": {
+        "bleu": 0.2879226710806142,
+        "rougeL": 0.009579322209193303
+      }
+    },
+    "L1_P3_ai": {
+      "exp6": {
+        "bleu": 0.746368851653252,
+        "rougeL": 0.04816407778113369,
+        "judge_relevance": 1.6527777777777777,
+        "judge_hallucination": 1.3194444444444444
+      },
+      "exp5_baseline_cell": "C4_P3",
+      "delta": {
+        "bleu": -0.4060757444252673,
+        "rougeL": -0.0017443175361728652
+      }
+    },
+    "L2_P3_ai": {
+      "exp6": {
+        "bleu": 1.7539364632991141,
+        "rougeL": 0.04496663285568895,
+        "judge_relevance": 1.6231884057971016,
+        "judge_hallucination": 1.6666666666666667
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L3_P3_ai": {
+      "exp6": {
+        "bleu": 1.6180193430896423,
+        "rougeL": 0.05430968423267741,
+        "judge_relevance": 1.8,
+        "judge_hallucination": 1.1571428571428573
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P3_ai": {
+      "exp6": {
+        "bleu": 2.2591945590095857,
+        "rougeL": 0.055904456083940554,
+        "judge_relevance": 1.5633802816901408,
+        "judge_hallucination": 1.619718309859155
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P5_ai": {
+      "exp6": {
+        "bleu": 0.9672676836565843,
+        "rougeL": 0.06216708990136439,
+        "judge_relevance": 1.8873239436619718,
+        "judge_hallucination": 1.647887323943662
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L4_P6_ai": {
+      "exp6": {
+        "bleu": 2.0497996156698544,
+        "rougeL": 0.05478961079971367,
+        "judge_relevance": 1.5972222222222223,
+        "judge_hallucination": 1.6666666666666667
+      },
+      "exp5_baseline_cell": null,
+      "delta": null
+    },
+    "L0_P5_ai": {
+      "exp6": {
+        "bleu": 0.4119484648318984,
+        "rougeL": 0.04228063816477338,
+        "judge_relevance": 1.5972222222222223,
+        "judge_hallucination": 1.5694444444444444
+      },
+      "exp5_baseline_cell": "C1_P5",
+      "delta": null
+    }
+  },
+  "note": "实验五无 per-class/balanced_acc（仅 pos-class），也无 judge；分类 Δ 用 accuracy/merge-F1（可比口径），生成 Δ 用 BLEU/ROUGE。judge 4 维与 balanced_acc/non_merge_recall 是本实验新增测量仪器，无基线。"
+}

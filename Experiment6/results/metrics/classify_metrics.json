@@ -1,0 +1,352 @@
+{
+  "L0_P1_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.402231859419996,
+    "balanced_accuracy": 0.5384615384615384,
+    "accuracy": 0.76,
+    "merge_f1": 0.8604651162790697,
+    "non_merge_recall": 0.07692307692307693,
+    "per_class": {
+      "non_merge": {
+        "precision": 1.0,
+        "recall": 0.07692307692307693,
+        "f1": 0.14285714285714285,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.7551020408163265,
+        "recall": 1.0,
+        "f1": 0.8604651162790697,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 1,
+      "fp": 12,
+      "fn": 0,
+      "tp": 37,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "context_ladder"
+  },
+  "L1_P1_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 2.807846615699999,
+    "balanced_accuracy": 0.5,
+    "accuracy": 0.74,
+    "merge_f1": 0.8505747126436781,
+    "non_merge_recall": 0.0,
+    "per_class": {
+      "non_merge": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.74,
+        "recall": 1.0,
+        "f1": 0.8505747126436781,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 0,
+      "fp": 13,
+      "fn": 0,
+      "tp": 37,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "context_ladder"
+  },
+  "L2_P1_ai": {
+    "n_total": 50,
+    "n_valid": 49,
+    "parse_error_rate": 0.020000000000000018,
+    "avg_latency": 3.244512563599999,
+    "balanced_accuracy": 0.5833333333333334,
+    "accuracy": 0.7959183673469388,
+    "merge_f1": 0.8809523809523809,
+    "non_merge_recall": 0.16666666666666666,
+    "per_class": {
+      "non_merge": {
+        "precision": 1.0,
+        "recall": 0.16666666666666666,
+        "f1": 0.2857142857142857,
+        "support": 12
+      },
+      "merge": {
+        "precision": 0.7872340425531915,
+        "recall": 1.0,
+        "f1": 0.8809523809523809,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 2,
+      "fp": 10,
+      "fn": 0,
+      "tp": 37,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "context_ladder"
+  },
+  "L3_P1_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 3.238759286720001,
+    "balanced_accuracy": 0.5769230769230769,
+    "accuracy": 0.78,
+    "merge_f1": 0.8705882352941177,
+    "non_merge_recall": 0.15384615384615385,
+    "per_class": {
+      "non_merge": {
+        "precision": 1.0,
+        "recall": 0.15384615384615385,
+        "f1": 0.26666666666666666,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.7708333333333334,
+        "recall": 1.0,
+        "f1": 0.8705882352941177,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 2,
+      "fp": 11,
+      "fn": 0,
+      "tp": 37,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "context_ladder"
+  },
+  "L4_P1_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 3.490749291239995,
+    "balanced_accuracy": 0.5769230769230769,
+    "accuracy": 0.78,
+    "merge_f1": 0.8705882352941177,
+    "non_merge_recall": 0.15384615384615385,
+    "per_class": {
+      "non_merge": {
+        "precision": 1.0,
+        "recall": 0.15384615384615385,
+        "f1": 0.26666666666666666,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.7708333333333334,
+        "recall": 1.0,
+        "f1": 0.8705882352941177,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 2,
+      "fp": 11,
+      "fn": 0,
+      "tp": 37,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "context_ladder"
+  },
+  "L4_P5_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 15.89152765637999,
+    "balanced_accuracy": 0.6049896049896051,
+    "accuracy": 0.6,
+    "merge_f1": 0.6875,
+    "non_merge_recall": 0.6153846153846154,
+    "per_class": {
+      "non_merge": {
+        "precision": 0.34782608695652173,
+        "recall": 0.6153846153846154,
+        "f1": 0.4444444444444444,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.8148148148148148,
+        "recall": 0.5945945945945946,
+        "f1": 0.6875,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 8,
+      "fp": 5,
+      "fn": 15,
+      "tp": 22,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "prompt_ablation"
+  },
+  "L4_P6_ai": {
+    "n_total": 50,
+    "n_valid": 48,
+    "parse_error_rate": 0.040000000000000036,
+    "avg_latency": 42.82607797067992,
+    "balanced_accuracy": 0.5934065934065934,
+    "accuracy": 0.5833333333333334,
+    "merge_f1": 0.6666666666666666,
+    "non_merge_recall": 0.6153846153846154,
+    "per_class": {
+      "non_merge": {
+        "precision": 0.34782608695652173,
+        "recall": 0.6153846153846154,
+        "f1": 0.4444444444444444,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.8,
+        "recall": 0.5714285714285714,
+        "f1": 0.6666666666666666,
+        "support": 35
+      }
+    },
+    "confusion_matrix": {
+      "tn": 8,
+      "fp": 5,
+      "fn": 15,
+      "tp": 20,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "prompt_ablation"
+  },
+  "L0_P5_ai": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 10.124649747039948,
+    "balanced_accuracy": 0.4355509355509356,
+    "accuracy": 0.46,
+    "merge_f1": 0.5714285714285714,
+    "non_merge_recall": 0.38461538461538464,
+    "per_class": {
+      "non_merge": {
+        "precision": 0.20833333333333334,
+        "recall": 0.38461538461538464,
+        "f1": 0.2702702702702703,
+        "support": 13
+      },
+      "merge": {
+        "precision": 0.6923076923076923,
+        "recall": 0.4864864864864865,
+        "f1": 0.5714285714285714,
+        "support": 37
+      }
+    },
+    "confusion_matrix": {
+      "tn": 5,
+      "fp": 8,
+      "fn": 19,
+      "tp": 18,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "attribution"
+  },
+  "L4_P1_control": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 3.0263247781200335,
+    "balanced_accuracy": 0.5882352941176471,
+    "accuracy": 0.72,
+    "merge_f1": 0.825,
+    "non_merge_recall": 0.17647058823529413,
+    "per_class": {
+      "non_merge": {
+        "precision": 1.0,
+        "recall": 0.17647058823529413,
+        "f1": 0.3,
+        "support": 17
+      },
+      "merge": {
+        "precision": 0.7021276595744681,
+        "recall": 1.0,
+        "f1": 0.825,
+        "support": 33
+      }
+    },
+    "confusion_matrix": {
+      "tn": 3,
+      "fp": 14,
+      "fn": 0,
+      "tp": 33,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "human_control"
+  },
+  "L4_P5_control": {
+    "n_total": 50,
+    "n_valid": 50,
+    "parse_error_rate": 0.0,
+    "avg_latency": 15.891270011699907,
+    "balanced_accuracy": 0.47771836007130125,
+    "accuracy": 0.48,
+    "merge_f1": 0.5517241379310345,
+    "non_merge_recall": 0.47058823529411764,
+    "per_class": {
+      "non_merge": {
+        "precision": 0.32,
+        "recall": 0.47058823529411764,
+        "f1": 0.38095238095238093,
+        "support": 17
+      },
+      "merge": {
+        "precision": 0.64,
+        "recall": 0.48484848484848486,
+        "f1": 0.5517241379310345,
+        "support": 33
+      }
+    },
+    "confusion_matrix": {
+      "tn": 8,
+      "fp": 9,
+      "fn": 17,
+      "tp": 16,
+      "labels": [
+        "non_merge",
+        "merge"
+      ]
+    },
+    "cell": "human_control"
+  }
+}

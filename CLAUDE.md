@@ -4,7 +4,7 @@ This file provides guidance to AI Agent when working with code in this repositor
 
 ## Project context
 
-Multi-experiment course project (Intelligent Software Engineering) on **code review**. The full spec is in `Experiment1/docs/实验指导书_代码审查.md` — **read it before making design decisions**. The project is problem-driven: every choice in an earlier experiment must serve the later ones, so treat the experiments as one pipeline, not independent tasks.
+Multi-experiment course project (Intelligent Software Engineering) on **code review**. The full spec is in `docs/实验指导书_代码审查.md` — **read it before making design decisions**. The project is problem-driven: every choice in an earlier experiment must serve the later ones, so treat the experiments as one pipeline, not independent tasks.
 
 There are 7 experiments. Two tasks run through all of them: **Merge Prediction** (classification) and **Review Comment Generation**.
 

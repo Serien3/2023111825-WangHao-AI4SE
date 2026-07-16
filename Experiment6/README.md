@@ -1,130 +1,167 @@
-# 实验六：改进针对大模型生成代码的代码审查
+# AI4SA-Exp6
 
-在**只优化输入（上下文 + Prompt）、不改模型**的前提下，用假设驱动的
-「**上下文阶梯 L0–L4 + Prompt 消融（P5/P6）**」弄清 AI 代码审查性能下降的真正来源，
-并**修复两个失明指标**证明改进是否有效。设计规约见
-`docs/specs/2026-07-10-exp6-ai-code-review-improvement-design.md`。
+English | [简体中文](README-zh.md)
 
-本实验是实验四/五的**下游消费者**：不重训、不重新采集数据、不重新识别 AI 标签、
-不做 RAG/向量检索/clone 整仓库。
+## Overview
 
-## 做了什么
+Experiment 6 improves large-language-model code review for AI-generated code without retraining or replacing the model. Building on the AI and matched-human samples from Experiment 5, it studies whether richer software-engineering context and prompt optimization can improve merge prediction and review-comment generation.
 
-| 维度 | 实验四/五 | 实验六的改进 |
-|---|---|---|
-| **上下文** | C1–C4 全是 diff 级浅上下文 | **单调递增 5 级深上下文阶梯** L0→L4（L2 拉改前后完整函数、L3 加 Issue+历史审查、L4 仓库级轻量词法检索） |
-| **Prompt** | P1–P4（Zero/Few/CoT/Role） | 新增 **P5 Self-Reflection**（强制先列 blocking 缺陷再定论）与 **P6 多轮交互式** |
-| **分类指标** | accuracy / merge-F1（失明：LLM 近乎全判 merge 也好看） | **per-class P/R + 混淆矩阵 + balanced accuracy**（头条），non-merge recall 作 Prompt 生效判据 |
-| **生成指标** | BLEU/ROUGE（对开放式意见无区分度） | **LLM-judge（deepseek-v4-pro）多维打分**：relevance/actionable/correct/hallucination；BLEU/ROUGE 仅保留可比 |
-| **对照** | — | 关键格（L4×P*、L4×P5）跑 matched_human_control，回答"改进后 AI 是否追平人类" |
+The experiment organizes context as a monotonic ladder from L0 to L4: a local diff, pull request and commit metadata, complete pre-change and post-change functions or files, linked issues and historical reviews, and lightweight repository-level lexical retrieval. It also compares the best previous prompt with P5 Self-Reflection and P6 multi-turn interaction. The overview figure below summarizes the main results.
 
-**P\* 选取（R11，不硬编码）**：`select_pstar.py` 从实验五 AI 池预测指标经验选取旧最优
-prompt——分类 `P*=P1`（均值 acc 最高）、生成 `P*=P3`（均值 BLEU 最高），结果落
-`results/metrics/pstar_selection.json`，与 `config.PSTAR` 一致性自检。
+![Experiment 6 result overview](results/figures/fig1_result_overview.png)
 
-## 实验矩阵（R12，非全网格）
+## Table of Contents
 
-每个任务（classify / generate）跑 10 个条件：
+- [Key Feature](#key-feature)
+- [Installation](#installation)
+- [Requirements](#requirements)
+- [Usage](#usage)
+  - [1. Inspect the Configuration and Experiment Matrix](#1-inspect-the-configuration-and-experiment-matrix)
+  - [2. Reproduce the Previous Best Prompt Selection](#2-reproduce-the-previous-best-prompt-selection)
+  - [3. Run Offline Tests](#3-run-offline-tests)
+  - [4. Run a Small End-to-End Sample](#4-run-a-small-end-to-end-sample)
+  - [5. Run the Full Experiment Matrix](#5-run-the-full-experiment-matrix)
+  - [6. Evaluate the Predictions](#6-evaluate-the-predictions)
+  - [7. Regenerate the Figures](#7-regenerate-the-figures)
+- [Limitations](#limitations)
 
-- **消融①（上下文阶梯）**：`{L0,L1,L2,L3,L4} × P*` —— AI 组（答"L4 是否弥合差距"）
-- **消融②（Prompt）**：`L4 × {P*, P5, P6}` —— AI 组（P6 仅 L4，成本控制）
-- **归因格**：`L0 × P5` —— AI 组（拆"上下文 vs prompt"功劳）
-- **人类对照**：`L4×P*`、`L4×P5` 两格跑 control 组
+## Key Feature
 
-`uv run python -m src.config` 打印完整矩阵。
+- Reuses the Experiment 5 AI-generated-code and matched-human samples, keeping Experiment 6 directly comparable with the previous performance-gap analysis.
+- Builds a five-level context ladder from L0 local diff context to L4 repository-level context, with explicit character and token budgets at each level.
+- Adds P5 Self-Reflection and P6 multi-turn prompts while retaining the empirically selected best prompts from earlier experiments as baselines.
+- Uses a focused 10-condition matrix per task rather than a full Cartesian grid, covering context ablation, prompt ablation, attribution, and matched-human controls.
+- Evaluates merge prediction with balanced accuracy, per-class precision, recall, and F1, confusion matrices, and non-merge recall instead of relying only on accuracy and merge-class F1.
+- Evaluates generated comments with a separate `deepseek-v4-pro` judge for relevance, actionability, correctness, and hallucination, while retaining BLEU and ROUGE for comparison with earlier experiments.
+- Separates GitHub fetch caching from the shared Experiment 4 LLM cache and includes the model identity in LLM cache keys to prevent executor and judge responses from colliding.
+- Produces prediction tables, machine-readable metrics, Experiment 5 baseline deltas, publication-ready figures, and source CSV files under `results/`.
 
-## 复用边界（正确性纪律）
+## Installation
 
-- **实验四（改造一处 = 接缝②）**：`llm_client.chat/_call_api/chat_semantic` 增加
-  `model` 参数并把 **content_hash 纳入 model 维度**。`model=None` 时 hash 用
-  `config.MODEL_ID`，与实验四/五既有行为**逐字一致**（回归，缓存不受影响）；裁判传
-  `model="deepseek-v4-pro"` 与执行调用天然不同 key，互不覆盖。
-- **零改动复用**：实验四 `context_builder`（C1/C4 块）、`prompts`（P1–P4）、
-  `run_experiments.parse_decision/_extract_comment`、`evaluate._generation_metrics`；
-  兄弟实验 `src` 由 `config.py` 以别名 `exp2src`/`exp4src` 载入。
-- **LLM 缓存共享实验四** cache 目录；上下文/Prompt 改变 messages → content_hash 变 →
-  不误命中旧缓存（R21）。
-- **API 拉取全部落盘缓存**（`results/fetch_cache/`，R7）：文件@sha / issue / code search /
-  目录列举，重跑命中不触网、失败也缓存以免反复重试（可复现）。
+It is recommended to reproduce the experiment environment with `uv`, or configure an equivalent Python environment based on `pyproject.toml`.
 
-## 目录结构与产物
-
-```
-Experiment6/
-├── src/
-│   ├── config.py            # 路径、别名加载、L0–L4、P*/P5/P6、R12 矩阵、token 预算
-│   ├── select_pstar.py      # R11：P* 选取（从实验五指标经验选取，可复现）
-│   ├── github_fetch.py      # L2–L4 唯一触网层（复用实验一 GitHubClient）+ 落盘缓存
-│   ├── data.py              # 复用实验四 data + 函数抽取/issue 引用/历史审查 join
-│   ├── context_builder.py   # 接缝①：build_context(repo, number, level) L0–L4
-│   ├── prompts.py           # P1–P4 复用 + P5 Self-Reflection + P6 多轮
-│   ├── judge.py             # 接缝③：LLM-judge 多维打分（deepseek-v4-pro）
-│   ├── run_experiments.py   # 主循环：遍历 R12 矩阵 → 执行模型 → 解析 →（生成额外裁判）
-│   ├── evaluate.py          # per-class P/R+混淆矩阵+balanced acc / judge 聚合 / 基线 Δ
-│   ├── visualization.py     # 5 张图对齐 6.9 五问
-│   └── tests.py             # 接缝①②③ + 指标 + 解析兼容（离线桩，19 断言）
-└── results/
-    ├── fetch_cache/         # API 拉取缓存（文件/issue/检索）
-    ├── predictions/         # {classify,generate}_predictions.parquet（每行一次调用）
-    ├── metrics/             # classify_metrics / generate_metrics / exp5_baseline_delta
-    │                        #   / pstar_selection.json
-    └── figures/             # fig1_context_ladder … fig5_human_control.png
-```
-
-**指标产物字段**：
-- `classify_metrics.json`：每条件含 `balanced_accuracy`（头条）、`per_class.{non_merge,merge}.{precision,recall,f1}`、
-  `confusion_matrix.{tn,fp,fn,tp}`、`non_merge_recall`、`accuracy`、`merge_f1`（降级为参考）、`parse_error_rate`。
-- `generate_metrics.json`：每条件含 `judge_{relevance,actionable,correct,hallucination}` 均值、
-  `judge_n`、以及可比用的 `bleu`/`rouge1,2,L`。
-- `exp5_baseline_delta.json`：与实验五 AI 基线（L0→C1、L1→C4 对应格）的改进 Δ。
-
-## 如何运行
-
-所有命令在 `Experiment6/` 目录下，用 uv（Python 3.12）。需 `.env` 内
-`GITHUB_TOKEN=...`（L2–L4 拉取）与 `DEEPSEEK_API_KEY=...`（执行 + 裁判）。
+From the repository root:
 
 ```bash
-cd Experiment6
-
-# 0. 查看配置与实验矩阵
-uv run python -m src.config
-
-# 1. 复现 P* 选取（写 results/metrics/pstar_selection.json）
-uv run python -m src.select_pstar
-
-# 2. 离线测试（不触网、不花钱；接缝①②③ + 指标 + 解析兼容，19 断言）
-uv run python -m src.tests
-
-# 3.（可选）全链路冒烟（R13）：1 条样本跑通 L0→L4 + P5/P6 + 裁判
-#    会触发 GitHub API（缓存）与 DeepSeek 执行 + 裁判调用
-uv run python -m src.run_experiments --task classify --only L0 P1 --limit 1
-uv run python -m src.run_experiments --task generate --only L4 P5 --limit 1
-
-# 4. 全量运行 R12 矩阵（触网、有缓存、幂等重跑）
-uv run python -m src.run_experiments --task classify     # 分类 10 条件
-uv run python -m src.run_experiments --task generate     # 生成 10 条件（含裁判）
-uv run python -m src.run_experiments --task all          # 两任务
-#   常用开关：--only LEVEL PROMPT 单条件；--limit N 每条件前 N 样本；--no-judge 跳过裁判
-
-# 5. 评估：修复失明指标 + 与实验五基线对比 Δ，末尾自动出图
-uv run python -m src.evaluate                # --no-figures 只算指标；--task 选任务
-
-# 6.（可选）单独出图
-uv run python -m src.visualization
+uv sync
 ```
 
-**推荐顺序**：先 `tests`（确认正确性）→ `run_experiments --only … --limit 1`（冒烟省钱）→
-确认缓存命中与产物无异常后再全量 → `evaluate`。
+Model inference and L2-L4 context construction require API credentials. Create or update the root `.env` file:
 
-## 结论叙事（对齐指导书 6.9 五问）
+```bash
+GITHUB_TOKEN=<your_github_token>
+DEEPSEEK_API_KEY=<your_deepseek_api_key>
+```
 
-1. **L4 为何有用** → 图1 上下文阶梯增益曲线（balanced acc / non-merge recall / judge relevance）。
-2. **哪种 Prompt 最适合** → 图2 Prompt 消融（预期 P5 拉高 non-merge recall）。
-3. **Prompt vs 上下文各解决什么** → 图3 归因格 `L0×P5` vs `L4×P*` vs `L4×P5`。
-4. **是否适用所有任务** → 分类可能仍受"标签噪声"天花板限制（未合并≠代码差，存在流程性拒绝），
-   生成受益更明显。
-5. **未来方向** → RAG / Agent / 工具调用（承接 6.10 与实验七）。
+All commands below should be run from the Experiment 6 directory:
 
-**已知威胁（写入报告）**：① 标签噪声是洞察不是 bug——部分 non-merge 是流程性拒绝，需用错误案例
-区分"代码质量判断"与"合并结果预测"，不以硬提 merge-F1 为目标；② 裁判自偏——pro 评 flash 规避
-"自评"但仍属同厂模型，列为 threat to validity。
+```bash
+cd /home/wzsyh/ai-software-engineer/Experiment6
+```
+
+## Requirements
+
+- Python >= 3.12 (tested on v3.12.3)
+- pandas >= 3.0.3 and pyarrow >= 24.0.0 for sample and prediction tables
+- openai >= 2.44.0 for the DeepSeek OpenAI-compatible API
+- PyGithub >= 2.9.1 and requests >= 2.34.2 for GitHub context retrieval
+- scikit-learn >= 1.9.0 for classification metrics
+- sacrebleu >= 2.6.0 and rouge-score >= 0.1.2 for generation metrics
+- matplotlib >= 3.11.0 and seaborn >= 0.13.2 for result visualization
+
+The following inputs and configuration must also be available:
+
+- `uv` in the system path for reproducing the experiment environment
+- `Experiment5/results/samples/` and `Experiment5/results/metrics/` from Experiment 5
+- `GITHUB_TOKEN` in the repository root `.env` file for L2-L4 GitHub context retrieval
+- `DEEPSEEK_API_KEY` in the repository root `.env` file for executor and judge calls
+
+## Usage
+
+### 1. Inspect the Configuration and Experiment Matrix
+
+Print the model configuration, L0-L4 context definitions, prompt selection, and the 10 conditions used by each task:
+
+```bash
+uv run python -m src.config
+```
+
+### 2. Reproduce the Previous Best Prompt Selection
+
+Select the previous best prompt from Experiment 5 metrics and verify that it agrees with `config.PSTAR`:
+
+```bash
+uv run python -m src.select_pstar
+```
+
+The selection record is written to:
+
+```text
+Experiment6/results/metrics/pstar_selection.json
+```
+
+### 3. Run Offline Tests
+
+Validate context construction, prompt behavior, executor-judge cache isolation, output parsing, and evaluation metrics without network or paid API calls:
+
+```bash
+uv run python -m src.tests
+```
+
+### 4. Run a Small End-to-End Sample
+
+Before the full run, execute one classification condition and one generation condition on a single sample:
+
+```bash
+uv run python -m src.run_experiments --task classify --only L0 P1 --limit 1
+uv run python -m src.run_experiments --task generate --only L4 P5 --limit 1
+```
+
+The L4 generation sample exercises GitHub context retrieval, model inference, and LLM judging. Retrieved context is cached under `results/fetch_cache/`, and predictions are written under `results/predictions/`.
+
+### 5. Run the Full Experiment Matrix
+
+Run either task separately or both tasks in sequence:
+
+```bash
+uv run python -m src.run_experiments --task classify
+uv run python -m src.run_experiments --task generate
+uv run python -m src.run_experiments --task all
+```
+
+Use `--only LEVEL PROMPT` to run one condition, `--limit N` to restrict the number of samples per condition, or `--no-judge` to skip generation judging. Each task evaluates 10 conditions: five context-ladder conditions, three L4 prompt conditions, one L0 attribution condition, and two matched-human controls, with duplicate cells counted once.
+
+### 6. Evaluate the Predictions
+
+Compute classification and generation metrics, compare compatible cells with Experiment 5 baselines, and generate the final figures:
+
+```bash
+uv run python -m src.evaluate
+```
+
+Use `--task classify` or `--task generate` to evaluate one task, and use `--no-figures` to calculate metrics only. Outputs are written to:
+
+```text
+Experiment6/results/metrics/
+Experiment6/results/figures/
+```
+
+### 7. Regenerate the Figures
+
+Regenerate the six publication-ready figures and their source CSV files from existing metrics and predictions:
+
+```bash
+uv run python -m src.nature_viz
+```
+
+The full interpretation of the results is available in [实验六结果分析.md](实验六结果分析.md).
+
+## Limitations
+
+- AI-generated-code labels and matched-human controls are inherited from Experiment 5. Heuristic label noise or imperfect matching therefore propagates into this experiment.
+- Merge status is a workflow outcome rather than a pure code-quality label. Some non-merged pull requests are closed for procedural reasons, so non-merge errors require case-level interpretation.
+- L4 uses lightweight lexical repository retrieval rather than semantic retrieval, a repository clone, or a full dependency graph. It may miss behaviorally related code with different names.
+- GitHub may omit oversized patches, referenced issues may be unavailable, and API failures can leave some samples with incomplete higher-level context. Disk caching improves reproducibility but cannot restore unavailable data.
+- The generation judge uses a stronger model from the same provider as the executor. This reduces direct self-evaluation but does not eliminate provider-specific judging bias.
+- P6 requires additional model turns, and generation judging adds another paid call. Quality improvements should therefore be considered together with latency and API cost.
+- The experiment uses a focused matrix and a limited AI-code sample. Bootstrap confidence intervals expose uncertainty, but small differences should not be treated as broadly generalizable.

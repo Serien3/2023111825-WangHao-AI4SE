@@ -1,0 +1,9 @@
+true_class,transition,count
+non_merge,correct in both,2
+merge,correct in both,22
+non_merge,fixed by P5,6
+merge,fixed by P5,0
+non_merge,broken by P5,0
+merge,broken by P5,15
+non_merge,wrong in both,5
+merge,wrong in both,0

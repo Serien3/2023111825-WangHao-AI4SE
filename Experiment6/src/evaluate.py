@@ -262,9 +262,9 @@ def main() -> None:
     if clf or gen:
         build_baseline_delta(clf, gen)
     if not args.no_figures:
-        from . import visualization
+        from . import nature_viz
         try:
-            visualization.main()
+            nature_viz.main()
         except Exception as e:
             print(f"[visualization] 跳过（{type(e).__name__}: {e}）")
 
