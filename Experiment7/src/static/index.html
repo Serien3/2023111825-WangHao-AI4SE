@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本地代码审查工作台</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="brand-block">
+      <span class="brand-mark" aria-hidden="true">CR</span>
+      <div><strong>本地代码审查</strong><span id="repo-meta">正在连接仓库</span></div>
+    </div>
+    <nav class="primary-nav" aria-label="一级导航">
+      <button class="nav-item active" data-view="review">Review</button>
+      <button class="nav-item" data-view="history">History</button>
+    </nav>
+    <div class="service-state" id="service-state"><span class="state-dot"></span><span>启动中</span></div>
+  </header>
+
+  <main>
+    <section id="review-view" class="view active" aria-label="代码审查">
+      <div class="action-bar">
+        <div class="workspace-summary">
+          <strong id="branch-name">--</strong><span id="change-count">0 个修改</span>
+        </div>
+        <div class="profile-control" role="group" aria-label="审查模式">
+          <button data-profile="fast">Fast</button>
+          <button data-profile="strict" class="active">Strict</button>
+        </div>
+        <div class="action-buttons">
+          <button id="refresh-button" class="icon-button" title="刷新工作区" aria-label="刷新工作区"><img
+              src="/static/assets/icons/refresh-cw.svg" alt=""></button>
+          <button id="review-file-button" class="secondary-command">审查当前文件</button>
+          <button id="review-all-button" class="primary-command">审查全部修改</button>
+        </div>
+      </div>
+
+      <div id="global-message" class="message hidden" role="status"></div>
+      <div class="mobile-tabs" role="tablist" aria-label="审查区域">
+        <button class="active" data-panel="files-panel">文件</button>
+        <button data-panel="diff-panel">Diff</button>
+        <button data-panel="result-panel">结果</button>
+      </div>
+
+      <div class="review-grid">
+        <aside id="files-panel" class="panel files-panel mobile-active">
+          <div class="panel-heading">
+            <h2>修改文件</h2><span id="reviewable-count">0 可审查</span>
+          </div>
+          <div id="file-list" class="file-list"></div>
+        </aside>
+
+        <section id="diff-panel" class="panel diff-panel" aria-label="只读差异">
+          <div class="panel-heading">
+            <h2 id="diff-title">Diff</h2><span id="diff-stats">+0 −0</span>
+          </div>
+          <div id="diff-content" class="diff-content" tabindex="0"></div>
+        </section>
+
+        <aside id="result-panel" class="panel result-panel">
+          <div class="panel-heading">
+            <h2>审查结果</h2><span id="result-state">待审查</span>
+          </div>
+          <div id="result-content" class="result-content"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="history-view" class="view" aria-label="审查历史">
+      <div class="history-toolbar">
+        <div>
+          <h1>审查历史</h1><span id="history-total">0 条记录</span>
+        </div>
+        <div class="history-actions">
+          <input id="history-path" type="search" placeholder="筛选文件路径" aria-label="筛选文件路径">
+          <select id="history-status" aria-label="筛选状态">
+            <option value="">全部状态</option>
+            <option>MERGE</option>
+            <option>REJECT</option>
+            <option>INCOMPLETE</option>
+          </select>
+          <button id="export-history" class="secondary-command command-with-icon"><img
+              src="/static/assets/icons/download.svg" alt="">导出全部</button>
+          <button id="clear-history" class="danger-command command-with-icon"><img
+              src="/static/assets/icons/trash-2.svg" alt="">清空</button>
+        </div>
+      </div>
+      <div id="history-list" class="history-list"></div>
+      <div class="pagination"><button id="history-prev" aria-label="上一页">←</button><span id="history-page">1 /
+          1</span><button id="history-next" aria-label="下一页">→</button></div>
+    </section>
+  </main>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog">
+      <h2 id="confirm-title">确认操作</h2>
+      <p id="confirm-message"></p>
+      <div><button value="cancel">取消</button><button value="confirm" class="danger-command">确认</button></div>
+    </form>
+  </dialog>
+  <script type="module" src="/static/app.js"></script>
+</body>
+
+</html>

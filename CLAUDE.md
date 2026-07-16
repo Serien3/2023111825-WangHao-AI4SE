@@ -13,7 +13,7 @@ There are 7 experiments. Two tasks run through all of them: **Merge Prediction**
 - **Exp 3**: DL (Code2Vec/CodeBERT) — needs `(diff_hunk → review comment)` pairs.
 - **Exp 4/6**: LLM + prompt engineering — needs multi-granularity context.
 - **Exp 5**: review of AI-generated code — needs the AI labels.
-- **Exp 7**: VSCode plugin deploying the above models.
+- **Exp 7** (built, `Experiment7/`): local FastAPI + native Web code-review workbench deploying DeepSeek and the Experiment 2 pre-review models. This intentionally replaces the originally proposed VS Code extension UI while preserving the HTTP model-service architecture. See `Experiment7/README-zh.md`.
 
 ## Environment
 
@@ -22,4 +22,6 @@ Uses **uv** for env/deps (Python 3.12). A GitHub token must be in `.env` as `GIT
 ```bash
 uv add <pkg>                          # add a dependency (updates pyproject + uv.lock)
 cd Experiment1 && uv run python -m src.<module>  # experiment 1 modules
+cd Experiment7 && uv run python -m src.app serve --repo <git-worktree>
+cd Experiment7 && uv run pytest tests -q        # fully offline, includes Playwright
 ```

@@ -5,13 +5,18 @@ description = "AI4SE"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.139.0",
+    "httpx>=0.28.1",
     "lightgbm>=4.6.0",
     "matplotlib>=3.11.0",
     "networkx>=3.6.1",
     "openai>=2.44.0",
     "pandas>=3.0.3",
+    "playwright>=1.61.0",
     "pyarrow>=24.0.0",
+    "pydantic>=2.13.4",
     "pygithub>=2.9.1",
+    "pytest>=9.1.1",
     "python-dotenv>=1.2.2",
     "requests>=2.34.2",
     "rouge-score>=0.1.2",
@@ -21,5 +26,6 @@ dependencies = [
     "tqdm>=4.68.3",
     "tree-sitter>=0.26.0",
     "tree-sitter-python>=0.25.0",
+    "uvicorn>=0.51.0",
     "xgboost>=3.3.0",
 ]

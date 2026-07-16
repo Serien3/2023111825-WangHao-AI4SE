@@ -1,0 +1,12 @@
+results/cache/*
+results/history/*
+results/metrics/paid_smoke.json
+!results/cache/.gitkeep
+!results/history/.gitkeep
+!results/metrics/.gitkeep
+report/*.aux
+report/*.fdb_latexmk
+report/*.fls
+report/*.log
+report/*.out
+report/*.xdv
